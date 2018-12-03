@@ -44,13 +44,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Long timestamp = System.currentTimeMillis()/1000;
 
         Map<String, Object> eventData = new HashMap<String, Object>();
-        eventData.put("revenue", 200.00);
-        eventData.put("currency", "USD");
-        eventData.put("timestamp", timestamp.toString());
+        eventData.put("affiliation", "Branch Metrics Company Store");
         eventData.put("category", "Arts & Entertainment");
+        eventData.put("coupon", "SATURDAY NIGHT SPECIAL");
+        eventData.put("currency", "USD");
+        eventData.put("description", "Branch Swag Kit");
+        eventData.put("revenue", 200.00);
+        eventData.put("shipping", 0.99);
         eventData.put("sku", "sku-be-doo");
+        eventData.put("tax", 19.99);
+        eventData.put("timestamp", timestamp.toString());
+        eventData.put("transaction_id", "123");
 
-        Event newEvent = new Event.Builder("Test Purchase Event",
+        eventData.put("custom1", "Custom Data 1");
+        eventData.put("custom2", "Custom Data 2");
+
+        Event newEvent = new Event.Builder("PURCHASE",
                 "com.adobe.eventType.generic.track",
                 "com.adobe.eventSource.requestContent")
                 .setEventData(eventData).build();

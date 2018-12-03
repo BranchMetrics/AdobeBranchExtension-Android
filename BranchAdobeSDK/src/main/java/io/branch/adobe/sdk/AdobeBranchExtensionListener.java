@@ -12,7 +12,7 @@ public class AdobeBranchExtensionListener extends ExtensionListener {
     @Override
     public void hear(final Event event) {
         // run the event processing on its own executor in the parent extension class
-        getParentExtension().handleConfigurationEvent(event);
+        getParentExtension().handleAdobeEvent(event);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package io.branch.adobe.sdk;
 
-import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,16 +9,12 @@ import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
-import com.adobe.marketing.mobile.MobileCore;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import io.branch.referral.Branch;
-import io.branch.referral.Defines;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
 import io.branch.referral.util.CurrencyType;
@@ -102,8 +97,10 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             return;
         }
 
-        Branch branch = Branch.getInstance(context, branchKey);
+        // Initialize Branch
+        Branch.getInstance(context, branchKey);
 
+        // Check to see if Branch actually initialized
         if (Branch.getInstance() != null) {
             Log.d(TAG, "Branch Initialized.");
         }
@@ -114,7 +111,13 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     private void handleTrackEvent(final Event event) {
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
-            branchEvent.logEvent(getAdobeContext());
+            Log.d(TAG, "=== logEvent(Start)");
+            try {
+                branchEvent.logEvent(getAdobeContext());
+            } catch(Exception e) {
+                Log.e(TAG, "EXCEPTION", e);
+            }
+            Log.d(TAG, "=== logEvent(End)");
         }
     }
 
@@ -238,7 +241,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     private void enumerateMap(String tag, Map<String, Object> map) {
         Log.d(TAG, "===" + tag + "====================");
-        Iterator iterator = map.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, Object> pair = (Map.Entry)iterator.next();
             Log.d(TAG, "Key: " + pair.getKey() + "\t" + pair.getValue().toString());

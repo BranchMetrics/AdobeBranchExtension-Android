@@ -32,11 +32,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.purchase:
                 doPurchase();
                 break;
+
+            case R.id.share:
+                doShare();
+                break;
         }
     }
 
     private void initForm() {
         findViewById(R.id.purchase).setOnClickListener(this);
+        findViewById(R.id.share).setOnClickListener(this);
     }
 
     private void doPurchase() {
@@ -72,5 +77,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         };
         MobileCore.dispatchEvent(newEvent, errorCallback);
+    }
+
+    private void doShare() {
+        Log.d(TAG, "doPurchase()");
+
     }
 }

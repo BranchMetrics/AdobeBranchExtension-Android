@@ -10,8 +10,17 @@
         android:id="@+id/purchase"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Purchase!"
+        android:text="@string/purchase"
         android:layout_centerInParent="true" >
+    </Button>
+
+    <Button
+        android:id="@+id/share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/share"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/purchase">
     </Button>
 
 </RelativeLayout>

@@ -33,7 +33,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // Branch
-    implementation 'io.branch.sdk.android:library:3.+'
+    implementation 'io.branch.sdk.android:library:3.0.3'
 
     // Adobe
     implementation 'com.adobe.marketing.mobile:userprofile:1.+'

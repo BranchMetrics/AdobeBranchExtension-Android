@@ -1,5 +1,6 @@
 package io.branch.adobe.demo;
 
+import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,12 +11,15 @@ import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.MobileCore;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import io.branch.adobe.sdk.AdobeBranch;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, ExtensionErrorCallback<ExtensionError> {
     private static final String TAG = "Branch MainActivity";
 
     @Override
@@ -39,6 +43,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void error(final ExtensionError extensionError) {
+        Log.e(TAG, String.format("An error occurred while dispatching event %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+    }
+
     private void initForm() {
         findViewById(R.id.purchase).setOnClickListener(this);
         findViewById(R.id.share).setOnClickListener(this);
@@ -48,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "doPurchase()");
         Long timestamp = System.currentTimeMillis()/1000;
 
-        Map<String, Object> eventData = new HashMap<String, Object>();
+        Map<String, Object> eventData = new HashMap<>();
         eventData.put("affiliation", "Branch Metrics Company Store");
         eventData.put("category", "Arts & Entertainment");
         eventData.put("coupon", "SATURDAY NIGHT SPECIAL");
@@ -70,17 +79,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setEventData(eventData).build();
 
         // dispatch the analytics event
-        ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
-            @Override
-            public void error(final ExtensionError extensionError) {
-                Log.e(TAG, String.format("An error occurred while dispatching event %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
-            }
-        };
-        MobileCore.dispatchEvent(newEvent, errorCallback);
+        MobileCore.dispatchEvent(newEvent, this);
     }
 
     private void doShare() {
-        Log.d(TAG, "doPurchase()");
+        Log.d(TAG, "doShare()");
+        Long timestamp = System.currentTimeMillis()/1000;
 
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("contentTitle", "Sample Item");
+
+        eventData.put(AdobeBranch.BranchLinkTitleKey, "Branch Adobe Demo");
+        eventData.put(AdobeBranch.BranchLinkSummaryKey, "Branch Swag");
+        eventData.put(AdobeBranch.BranchLinkCampaignKey, "Sharing");
+        eventData.put(AdobeBranch.BranchLinkShareTextKey, "Check out this Branch swag!");
+
+        // Share Sheet needs this activity context
+        // TODO: Find a way to get the Activity Context in the extension
+        eventData.put(AdobeBranch.BranchActivityContextKey, new WeakReference<Activity>(this));
+
+        Event newEvent = new Event.Builder(AdobeBranch.BranchEvent_ShowShareSheet,
+                AdobeBranch.BranchEventType,
+                AdobeBranch.BranchEventSource)
+                .setEventData(eventData).build();
+
+        // dispatch the share event
+        MobileCore.dispatchEvent(newEvent, this);
     }
+
 }

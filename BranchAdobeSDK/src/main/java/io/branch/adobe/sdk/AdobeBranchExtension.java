@@ -1,5 +1,8 @@
 package io.branch.adobe.sdk;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,14 +13,22 @@ import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.branch.indexing.BranchUniversalObject;
 import io.branch.referral.Branch;
+import io.branch.referral.BranchError;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
 import io.branch.referral.util.CurrencyType;
+import io.branch.referral.util.LinkProperties;
+import io.branch.referral.util.ShareSheetStyle;
 
 public class AdobeBranchExtension extends Extension implements ExtensionErrorCallback<ExtensionError> {
     private static final String TAG = "AdobeBranchExtension::";
@@ -62,7 +73,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     void handleAdobeEvent(final Event event) {
         Log.d(TAG, String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
 
-        if (event.getType().equals("com.adobe.eventtype.configuration") && event.getSource().equals("com.adobe.eventsource.responsecontent")) {
+        if (isAdobeInitEvent(event)) {
             handleBranchInitEvent(event);
         }
 
@@ -71,11 +82,25 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             return;
         }
 
-        if (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent")) {
+        if (isAdobeTrackEvent(event)) {
             handleTrackEvent(event);
+        } else if (isBranchShareEvent(event)) {
+            handleShareEvent(event);
         }
 
         // TODO: Handle Other Events
+    }
+
+    private boolean isAdobeInitEvent(final Event event) {
+        return (event.getType().equals("com.adobe.eventtype.configuration") && event.getSource().equals("com.adobe.eventsource.responsecontent"));
+    }
+
+    private boolean isAdobeTrackEvent(final Event event) {
+        return (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent"));
+    }
+
+    private boolean isBranchShareEvent(final Event event) {
+        return (event.getType().equals(AdobeBranch.BranchEventType) && event.getSource().equals(AdobeBranch.BranchEventSource));
     }
 
     private void handleBranchInitEvent(final Event event) {
@@ -98,14 +123,23 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         }
 
         // Initialize Branch
+        Branch.enableLogging();
         Branch.getInstance(context, branchKey);
 
         // Check to see if Branch actually initialized
         if (Branch.getInstance() != null) {
-            Log.d(TAG, "Branch Initialized.");
+            // Initialize a Branch Session
+            Branch.getInstance().initSession(new Branch.BranchReferralInitListener() {
+                @Override
+                public void onInitFinished(JSONObject referringParams, BranchError error) {
+                    Log.d(TAG, "JSON: " + referringParams.toString());
+                    // TODO: Normally we would expect this to be handled by the app developer
+                }
+            });
         }
 
         enumerateMap("init", configuration);
+        Log.d(TAG, "Branch Initialized.");
     }
 
     private void handleTrackEvent(final Event event) {
@@ -118,6 +152,26 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 Log.e(TAG, "EXCEPTION", e);
             }
             Log.d(TAG, "=== logEvent(End)");
+        }
+    }
+
+    private void handleShareEvent(final Event event) {
+        Log.d(TAG, "Share Event");
+        Map<String, Object> eventData = event.getEventData();
+        if (event.getName().equals(AdobeBranch.BranchEvent_ShowShareSheet)) {
+            final BranchUniversalObject buo = new BranchUniversalObject();
+            final LinkProperties linkProperties = new LinkProperties();
+            linkProperties.addControlParameter("foo", "bar");
+
+            final Activity activity = getActivityContext(eventData);
+            if (activity != null) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        buo.showShareSheet(activity, linkProperties, new ShareSheetStyle(activity, "My App name", "My Message Body"), null);
+                    }
+                });
+            }
         }
     }
 
@@ -237,6 +291,16 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         }
 
         return context;
+    }
+
+    private Activity getActivityContext(Map<String, Object> eventData) {
+        Activity activity = null;
+        WeakReference<Activity> activityRef = (WeakReference<Activity>)eventData.get(AdobeBranch.BranchActivityContextKey);
+        if (activityRef != null) {
+            activity = activityRef.get();
+        }
+
+        return activity;
     }
 
     private void enumerateMap(String tag, Map<String, Object> map) {

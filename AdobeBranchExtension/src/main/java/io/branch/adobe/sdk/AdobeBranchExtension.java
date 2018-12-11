@@ -1,8 +1,6 @@
 package io.branch.adobe.sdk;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -13,7 +11,6 @@ import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
@@ -136,6 +133,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                     // TODO: Normally we would expect this to be handled by the app developer
                 }
             });
+
         }
 
         enumerateMap("init", configuration);

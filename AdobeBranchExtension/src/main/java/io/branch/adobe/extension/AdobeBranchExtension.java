@@ -1,4 +1,4 @@
-package io.branch.adobe.sdk;
+package io.branch.adobe.extension;
 
 import android.app.Activity;
 import android.content.Context;
@@ -100,7 +100,17 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return (event.getType().equals(AdobeBranch.BranchEventType) && event.getSource().equals(AdobeBranch.BranchEventSource));
     }
 
+    /**
+     * Handle the Branch Init Event.
+     * This is sent by Adobe, when initialization 
+     * @param event
+     */
     private void handleBranchInitEvent(final Event event) {
+        if (Branch.getInstance() != null) {
+            Log.i(TAG, "Branch already initialized");
+            return;
+        }
+
         Map<String, Object> configuration = this.getApi().getSharedEventState("com.adobe.module.configuration", event, this);
         if (configuration == null) {
             Log.e(TAG, "Branch Configuration not found");
@@ -121,6 +131,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         // Initialize Branch
         Branch.enableLogging();
+        Branch.enableForcedSession();   // Required for late-initialization
         Branch.getInstance(context, branchKey);
 
         // Check to see if Branch actually initialized

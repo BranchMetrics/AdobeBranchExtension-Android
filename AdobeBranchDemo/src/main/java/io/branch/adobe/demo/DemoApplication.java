@@ -17,7 +17,7 @@ import com.adobe.marketing.mobile.UserProfile;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.branch.adobe.sdk.AdobeBranchExtension;
+import io.branch.adobe.extension.AdobeBranchExtension;
 
 public class DemoApplication extends Application {
     private static final String TAG = "DemoApplication::";

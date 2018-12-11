@@ -1,4 +1,4 @@
-package io.branch.adobe.sdk;
+package io.branch.adobe.extension;
 
 /**
  * Adobe App Definitions.

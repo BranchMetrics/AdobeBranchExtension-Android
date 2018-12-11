@@ -12,12 +12,10 @@ import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.MobileCore;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import io.branch.adobe.sdk.AdobeBranch;
+import io.branch.adobe.extension.AdobeBranch;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ExtensionErrorCallback<ExtensionError> {
     private static final String TAG = "Branch MainActivity";
@@ -87,12 +85,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Long timestamp = System.currentTimeMillis()/1000;
 
         Map<String, Object> eventData = new HashMap<>();
-        eventData.put("contentTitle", "Sample Item");
 
-        eventData.put(AdobeBranch.BranchLinkTitleKey, "Branch Adobe Demo");
+        eventData.put(AdobeBranch.BranchLinkTitleKey, "Sample Item");
         eventData.put(AdobeBranch.BranchLinkSummaryKey, "Branch Swag");
         eventData.put(AdobeBranch.BranchLinkCampaignKey, "Sharing");
         eventData.put(AdobeBranch.BranchLinkShareTextKey, "Check out this Branch swag!");
+        eventData.put("timestamp", timestamp.toString());
 
         // Share Sheet needs this activity context
         // TODO: Find a way to get the Activity Context in the extension

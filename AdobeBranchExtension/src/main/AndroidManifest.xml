@@ -1,2 +1,2 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.branch.adobe.sdk" />
+    package="io.branch.adobe.extension" />

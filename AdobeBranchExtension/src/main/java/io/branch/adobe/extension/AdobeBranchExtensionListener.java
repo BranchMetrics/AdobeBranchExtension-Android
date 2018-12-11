@@ -1,4 +1,4 @@
-package io.branch.adobe.sdk;
+package io.branch.adobe.extension;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.ExtensionApi;

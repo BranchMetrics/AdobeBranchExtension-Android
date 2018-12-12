@@ -1,7 +1,6 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.adobe.marketing.mobile.Event;
@@ -48,25 +47,18 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     @Override
     public void error(ExtensionError extensionError) {
         // something went wrong...
-        // TODO: Figure out what to do about it.
+        // TODO: What to do about it.
         Log.e(TAG, String.format("An error occurred in the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
     }
 
     private void initExtension() {
         // Register an Event Listener for track events
         getApi().registerEventListener("com.adobe.eventtype.generic.track", "com.adobe.eventsource.requestcontent", AdobeBranchExtensionListener.class, this);
-
-        // Register a Wildcard Listener
-        // getApi().registerWildcardListener(AdobeBranchExtensionListener.class, this);
     }
 
     // Package Private
     void handleAdobeEvent(final Event event) {
-        Log.d(TAG, String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
-
-        if (isAdobeInitEvent(event)) {
-            handleBranchInitEvent(event);
-        }
+        Log.v(TAG, String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
@@ -76,55 +68,10 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         if (isAdobeTrackEvent(event)) {
             handleTrackEvent(event);
         }
-
-        // TODO: Handle Other Events
-    }
-
-    private boolean isAdobeInitEvent(final Event event) {
-        return (event.getType().equals("com.adobe.eventtype.configuration") && event.getSource().equals("com.adobe.eventsource.responsecontent"));
     }
 
     private boolean isAdobeTrackEvent(final Event event) {
         return (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent"));
-    }
-
-    /**
-     * Handle the Branch Init Event.
-     * This is sent by Adobe, when configuration data is available.
-     * TODO: Revisit, as this is only applicable in late initialization cases.
-     * @param event Adobe Event
-     */
-    private void handleBranchInitEvent(final Event event) {
-        if (Branch.getInstance() != null) {
-            Log.i(TAG, "Branch already initialized");
-            return;
-        }
-
-        Map<String, Object> configuration = this.getApi().getSharedEventState("com.adobe.module.configuration", event, this);
-        if (configuration == null) {
-            Log.e(TAG, "Branch Configuration not found");
-            return;
-        }
-
-        String branchKey = String.valueOf(configuration.get(BranchConfig.BRANCH_CONFIG_BRANCHKEY));
-        if (TextUtils.isEmpty(branchKey)) {
-            Log.e(TAG, "Branch Key not found");
-            return;
-        }
-
-        Context context = getAdobeContext();
-        if (context == null) {
-            Log.e(TAG, "Application Context not found");
-            return;
-        }
-
-        // Initialize Branch
-        Branch.enableLogging();
-        Branch.enableForcedSession();   // TODO: Revisit why this is required for late-initialization
-        Branch.getInstance(context, branchKey);
-
-        enumerateMap("init", configuration);
-        Log.d(TAG, "Branch Initialized.");
     }
 
     /**
@@ -135,13 +82,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     private void handleTrackEvent(final Event event) {
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
-            Log.d(TAG, "=== logEvent(Start)");
             try {
                 branchEvent.logEvent(getAdobeContext());
             } catch(Exception e) {
-                Log.e(TAG, "EXCEPTION", e);
+                Log.e(TAG, "handleTrackEvent Exception", e);
             }
-            Log.d(TAG, "=== logEvent(End)");
         }
     }
 
@@ -149,8 +94,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         BranchEvent branchEvent = null;
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
-            enumerateMap("track", eventData);
-
             try {
                 // Try to make a Standard Event if possible.
                 BRANCH_STANDARD_EVENT eventType = BRANCH_STANDARD_EVENT.valueOf(event.getName());
@@ -275,12 +218,12 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     }
 
     // TODO: Debug Code.  Remove before shipping.
-    private void enumerateMap(String tag, Map<String, Object> map) {
-        Log.d(TAG, "===" + tag + "====================");
-        for (Map.Entry<String, Object> pair : map.entrySet()) {
-            Log.d(TAG, "Key: " + pair.getKey() + "\t" + pair.getValue().toString());
-        }
-        Log.d(TAG, "===" + tag + "====================");
-    }
+//    private void enumerateMap(String tag, Map<String, Object> map) {
+//        Log.d(TAG, "===" + tag + "====================");
+//        for (Map.Entry<String, Object> pair : map.entrySet()) {
+//            Log.d(TAG, "Key: " + pair.getKey() + "\t" + pair.getValue().toString());
+//        }
+//        Log.d(TAG, "===" + tag + "====================");
+//    }
 
 }

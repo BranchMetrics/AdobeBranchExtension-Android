@@ -38,7 +38,15 @@
 
         </activity>
 
-        <!-- NOTE: Cannot Register the Branch InstallListener here -->
+        <!-- Branch init -->
+        <meta-data android:name="io.branch.sdk.BranchKey" android:value="key_live_nbB0KZ4UGOKaHEWCjQI2ThncEAeRJmhy" />
+
+        <!-- Branch install referrer tracking (optional) -->
+        <receiver android:name="io.branch.referral.InstallListener" android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

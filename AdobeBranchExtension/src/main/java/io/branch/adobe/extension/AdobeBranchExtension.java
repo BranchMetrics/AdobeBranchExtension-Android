@@ -1,6 +1,5 @@
 package io.branch.adobe.extension;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,21 +10,13 @@ import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 
-import org.json.JSONObject;
-
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.util.Iterator;
 import java.util.Map;
 
-import io.branch.indexing.BranchUniversalObject;
 import io.branch.referral.Branch;
-import io.branch.referral.BranchError;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
 import io.branch.referral.util.CurrencyType;
-import io.branch.referral.util.LinkProperties;
-import io.branch.referral.util.ShareSheetStyle;
 
 public class AdobeBranchExtension extends Extension implements ExtensionErrorCallback<ExtensionError> {
     private static final String TAG = "AdobeBranchExtension::";
@@ -62,8 +53,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     }
 
     private void initExtension() {
-        // Wildcard Listener
-        boolean success = getApi().registerWildcardListener(AdobeBranchExtensionListener.class, this);
+        // Register an Event Listener for track events
+        getApi().registerEventListener("com.adobe.eventtype.generic.track", "com.adobe.eventsource.requestcontent", AdobeBranchExtensionListener.class, this);
+
+        // Register a Wildcard Listener
+        // getApi().registerWildcardListener(AdobeBranchExtensionListener.class, this);
     }
 
     // Package Private
@@ -81,8 +75,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         if (isAdobeTrackEvent(event)) {
             handleTrackEvent(event);
-        } else if (isBranchShareEvent(event)) {
-            handleShareEvent(event);
         }
 
         // TODO: Handle Other Events
@@ -96,14 +88,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent"));
     }
 
-    private boolean isBranchShareEvent(final Event event) {
-        return (event.getType().equals(AdobeBranch.BranchEventType) && event.getSource().equals(AdobeBranch.BranchEventSource));
-    }
-
     /**
      * Handle the Branch Init Event.
-     * This is sent by Adobe, when initialization 
-     * @param event
+     * This is sent by Adobe, when configuration data is available.
+     * TODO: Revisit, as this is only applicable in late initialization cases.
+     * @param event Adobe Event
      */
     private void handleBranchInitEvent(final Event event) {
         if (Branch.getInstance() != null) {
@@ -131,26 +120,18 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         // Initialize Branch
         Branch.enableLogging();
-        Branch.enableForcedSession();   // Required for late-initialization
+        Branch.enableForcedSession();   // TODO: Revisit why this is required for late-initialization
         Branch.getInstance(context, branchKey);
-
-        // Check to see if Branch actually initialized
-        if (Branch.getInstance() != null) {
-            // Initialize a Branch Session
-            Branch.getInstance().initSession(new Branch.BranchReferralInitListener() {
-                @Override
-                public void onInitFinished(JSONObject referringParams, BranchError error) {
-                    Log.d(TAG, "JSON: " + referringParams.toString());
-                    // TODO: Normally we would expect this to be handled by the app developer
-                }
-            });
-
-        }
 
         enumerateMap("init", configuration);
         Log.d(TAG, "Branch Initialized.");
     }
 
+    /**
+     * Handle the Adobe Track Event.
+     * This is sent by Adobe, in response to a dispatchEvent
+     * @param event Adobe Event
+     */
     private void handleTrackEvent(final Event event) {
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
@@ -161,26 +142,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 Log.e(TAG, "EXCEPTION", e);
             }
             Log.d(TAG, "=== logEvent(End)");
-        }
-    }
-
-    private void handleShareEvent(final Event event) {
-        Log.d(TAG, "Share Event");
-        Map<String, Object> eventData = event.getEventData();
-        if (event.getName().equals(AdobeBranch.BranchEvent_ShowShareSheet)) {
-            final BranchUniversalObject buo = new BranchUniversalObject();
-            final LinkProperties linkProperties = new LinkProperties();
-            linkProperties.addControlParameter("foo", "bar");
-
-            final Activity activity = getActivityContext(eventData);
-            if (activity != null) {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        buo.showShareSheet(activity, linkProperties, new ShareSheetStyle(activity, "My App name", "My Message Body"), null);
-                    }
-                });
-            }
         }
     }
 
@@ -195,20 +156,18 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 BRANCH_STANDARD_EVENT eventType = BRANCH_STANDARD_EVENT.valueOf(event.getName());
                 branchEvent = new BranchEvent(eventType);
             } catch (IllegalArgumentException e) {
-
+                //This is expected if we are unable to create a Standard Event
             }
 
             if (branchEvent == null) {
-                // This is a "Custom" event
+                // This is considered a "Custom" event
                 branchEvent = new BranchEvent(event.getName());
             }
 
-            Iterator iterator = eventData.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Object> pair = (Map.Entry)iterator.next();
+
+            for (Map.Entry<String, Object> pair : eventData.entrySet()) {
                 String key = pair.getKey();
                 Object obj = pair.getValue();
-                boolean added = false;
 
                 if (!addStandardProperty(branchEvent, key, obj)) {
                     branchEvent.addCustomDataProperty(key, obj.toString());
@@ -218,17 +177,24 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return branchEvent;
     }
 
-    boolean addStandardProperty(BranchEvent event, String key, Object value) {
+    /**
+     * Add a Branch "Standard" Key/Value to a Branch Event
+     * @param event Branch Event
+     * @param key Key
+     * @param value Value
+     * @return true if the key maps directly to a well known Branch Event key
+     */
+    private boolean addStandardProperty(BranchEvent event, String key, Object value) {
         switch(key) {
-            case "affiliation":
+            case AdobeBranch.KEY_AFFILIATION:
                 event.setAffiliation(value.toString());
                 return true;
 
-            case "coupon":
+            case AdobeBranch.KEY_COUPON:
                 event.setCoupon(value.toString());
                 return true;
 
-            case "currency":
+            case AdobeBranch.KEY_CURRENCY:
                 CurrencyType ct = CurrencyType.getValue(value.toString());
                 if (ct != null) {
                     event.setCurrency(ct);
@@ -236,11 +202,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 }
                 break;
 
-            case "description":
+            case AdobeBranch.KEY_DESCRIPTION:
                 event.setDescription(value.toString());
                 return true;
 
-            case "revenue":
+            case AdobeBranch.KEY_REVENUE:
                 Double revenue = asDouble(value);
                 if (revenue != null) {
                     event.setRevenue(revenue);
@@ -248,11 +214,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 }
                 break;
 
-            case "search_query":
+            case AdobeBranch.KEY_SEARCH_QUERY:
                 event.setSearchQuery(value.toString());
                 return true;
 
-            case "shipping":
+            case AdobeBranch.KEY_SHIPPING:
                 Double shipping = asDouble(value);
                 if (shipping != null) {
                     event.setShipping(shipping);
@@ -260,7 +226,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 }
                 break;
 
-            case "tax":
+            case AdobeBranch.KEY_TAX:
                 Double tax = asDouble(value);
                 if (tax != null) {
                     event.setShipping(tax);
@@ -268,7 +234,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 }
                 break;
 
-            case "transaction_id":
+            case AdobeBranch.KEY_TRANSACTION_ID:
                 event.setTransactionID(value.toString());
                 return true;
 
@@ -279,6 +245,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return false;
     }
 
+    /**
+     * Attempt to convert an Object to a Double
+     * @param o Object that is hopefully a Number
+     * @return a Double if success, or null if the object was not a Number
+     */
     private Double asDouble(Object o) {
         Double val = null;
         if (o instanceof Number) {
@@ -287,6 +258,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return val;
     }
 
+    // Note that Adobe is currently evaluating a method to access Context with direct method calls.
     private Context getAdobeContext() {
         Context context = null;
         try {
@@ -302,21 +274,10 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return context;
     }
 
-    private Activity getActivityContext(Map<String, Object> eventData) {
-        Activity activity = null;
-        WeakReference<Activity> activityRef = (WeakReference<Activity>)eventData.get(AdobeBranch.BranchActivityContextKey);
-        if (activityRef != null) {
-            activity = activityRef.get();
-        }
-
-        return activity;
-    }
-
+    // TODO: Debug Code.  Remove before shipping.
     private void enumerateMap(String tag, Map<String, Object> map) {
         Log.d(TAG, "===" + tag + "====================");
-        Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Object> pair = (Map.Entry)iterator.next();
+        for (Map.Entry<String, Object> pair : map.entrySet()) {
             Log.d(TAG, "Key: " + pair.getKey() + "\t" + pair.getValue().toString());
         }
         Log.d(TAG, "===" + tag + "====================");

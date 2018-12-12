@@ -1,24 +1,36 @@
 package io.branch.adobe.extension;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
+
+import io.branch.referral.Branch;
+
 /**
- * Adobe App Definitions.
+ * AdobeBranch Extension.
  */
 public class AdobeBranch {
-    public static final String BranchEventType   = "com.branch.eventtype";
-    public static final String BranchEventSource = "com.branch.eventsource";
+    // ==== EVENT KEYS =============================================================================
+    public static final String KEY_AFFILIATION      = "affiliation";
+    public static final String KEY_COUPON           = "coupon";
+    public static final String KEY_CURRENCY         = "currency";
+    public static final String KEY_DESCRIPTION      = "description";
+    public static final String KEY_REVENUE          = "revenue";
+    public static final String KEY_SEARCH_QUERY     = "search_query";
+    public static final String KEY_SHIPPING         = "shipping";
+    public static final String KEY_TAX              = "tax";
+    public static final String KEY_TRANSACTION_ID   = "transaction_id";
 
-    public static final String BranchEvent_ShowShareSheet = "branch-share-sheet";
-    public static final String BranchEvent_DeepLinkOpened = "branch-deep-link-opened";
+    // TODO; Revisit.  This does not do anything that Branch doesn't already do.
+    public static Branch getAutoInstance(@NonNull Context context) {
+        return Branch.getAutoInstance(context);
+    }
 
-    public static final String BranchActivityContextKey     = "activityContext";
-
-    public static final String BranchLinkTitleKey           = "contentTitle";
-    public static final String BranchLinkSummaryKey         = "contentDescription";
-    public static final String BranchLinkImageURLKey        = "contentImage";
-    public static final String BranchLinkCanonicalURLKey    = "canonicalURLKey";
-    public static final String BranchLinkCampaignKey        = "campaign";
-    public static final String BranchLinkShareTextKey       = "shareText";
-    public static final String BranchLinkTagsKey            = "tags";
-    public static final String BranchLinkUserInfoKey        = "userInfo";
-
+    // TODO; Revisit.  This does not do anything that Branch doesn't already do.
+    public static boolean initSession(Branch.BranchReferralInitListener callback) {
+        Branch branch = Branch.getInstance();
+        if (branch != null) {
+            return branch.initSession(callback);
+        }
+        return false;
+    }
 }

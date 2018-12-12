@@ -17,7 +17,9 @@ import com.adobe.marketing.mobile.UserProfile;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.branch.adobe.extension.AdobeBranch;
 import io.branch.adobe.extension.AdobeBranchExtension;
+import io.branch.referral.*;
 
 public class DemoApplication extends Application {
     private static final String TAG = "DemoApplication::";
@@ -27,12 +29,17 @@ public class DemoApplication extends Application {
         super.onCreate();
 
         // Initialize
+        initBranch();
         initAdobeBranch();
         registerAdobeBranchExtension();
     }
 
     private void initAdobeBranch() {
         Log.d(TAG, "initAdobeBranch()");
+
+        // TODO: Revisit.  We should encourage customers to initialize Branch using Branch.
+        AdobeBranch.getAutoInstance(this);
+
         MobileCore.setApplication(this);
         MobileCore.setLogLevel(LoggingMode.DEBUG);
 
@@ -51,6 +58,13 @@ public class DemoApplication extends Application {
         } catch (InvalidInitException e) {
             Log.e(TAG, "InitException", e);
         }
+    }
+
+    private void initBranch() {
+        Branch.enableLogging();
+
+        // TODO: Revisit.  This is how we should encourage customers to initialize Branch using Branch.
+        // Branch.getAutoInstance(this);
     }
 
     private void registerAdobeBranchExtension() {

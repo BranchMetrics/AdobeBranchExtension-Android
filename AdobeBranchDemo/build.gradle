@@ -27,6 +27,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // Adobe Branch Extension
+    implementation 'io.branch.sdk.android:library:3.0.3'
     implementation project(path: ':AdobeBranchExtension')
 
     // Adobe

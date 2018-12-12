@@ -1,0 +1,18 @@
+{
+   "success": true,
+   "request_id": "4d65c2ba-d88a-4356-a157-7ed04676b28e",
+   "catalog": [
+      {
+         "id": 1,
+         "title": "Branch Glasses",
+         "description": "New Branch Wayfarer style classic sunglasses",
+         "price": 12.99
+      },
+      {
+         "id": 2,
+         "title": "Branch Stickers",
+         "description": "Decorative Branch Stickers to make your day",
+         "price": 1.49
+      }
+   ]
+}

@@ -4,6 +4,7 @@
     <string name="purchase">Purchase!</string>
     <string name="share">Share!</string>
 
+    <string name="catalog">Product Catalog</string>
     <string name="empty">No Results</string>
     <string name="product_image">Product Image</string>
     <string name="add_to_cart">Add to Cart</string>

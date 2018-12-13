@@ -35,9 +35,9 @@ public class SwagAdapter extends ArrayAdapter<SwagModel> {
         SwagModel model = getItem(position);
 
         if (model != null) {
-            ImageView image = (ImageView) v.findViewById(R.id.content_img);
-            TextView title = (TextView) v.findViewById(R.id.title_txt);
-            TextView description = (TextView) v.findViewById(R.id.description_txt);
+            ImageView image = v.findViewById(R.id.content_img);
+            TextView title = v.findViewById(R.id.title_txt);
+            TextView description = v.findViewById(R.id.description_txt);
 
             if (image != null) {
                 image.setImageResource(findImageResource(model.getId()));

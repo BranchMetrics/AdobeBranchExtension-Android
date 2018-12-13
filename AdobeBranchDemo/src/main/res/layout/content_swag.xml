@@ -49,10 +49,19 @@
     </TextView>
 
     <TextView
-        android:id="@+id/description_txt"
+        android:id="@+id/price_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/image_container"
+        android:layout_centerHorizontal="true"
+        android:textSize = "24sp" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/description_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/price_txt"
         android:layout_centerHorizontal="true"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>

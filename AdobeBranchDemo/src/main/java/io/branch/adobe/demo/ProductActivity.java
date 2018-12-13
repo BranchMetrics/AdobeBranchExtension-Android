@@ -1,5 +1,6 @@
 package io.branch.adobe.demo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -7,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -43,6 +45,15 @@ public class ProductActivity extends AppCompatActivity {
     private void initList() {
         ListView listView = findViewById(android.R.id.list);
         listView.setEmptyView(findViewById(android.R.id.empty));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                SwagModel swag = (SwagModel)parent.getAdapter().getItem(position);
+                Intent intent = new Intent(ProductActivity.this, SwagActivity.class);
+                intent.putExtra(SwagActivity.SWAG_DATA, swag.toString());
+                startActivity(intent);
+            }
+        });
 
         try {
             JSONObject jsonAsset = AssetUtils.readJsonFile(this, "swag_data.json");

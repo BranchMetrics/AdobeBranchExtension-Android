@@ -49,11 +49,14 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SwagActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
-        <activity android:name=".MainActivity"/>
+        <activity android:name=".MainActivity" />
 
-
-    <!-- Branch init -->
+        <!-- Branch init -->
         <meta-data
             android:name="io.branch.sdk.BranchKey"
             android:value="key_live_nbB0KZ4UGOKaHEWCjQI2ThncEAeRJmhy" />

@@ -1,14 +1,9 @@
 package io.branch.sample.testadobebranch;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
 
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -19,13 +14,9 @@ import io.branch.sample.testadobebranch.util.AssetUtils;
 
 import static org.junit.Assert.*;
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
 @RunWith(AndroidJUnit4.class)
 public class TestDataModel extends BaseTest {
+
     @Test
     public void testSwagModel() throws Throwable {
         JSONObject jsonObject = AssetUtils.readJsonFile(getTestContext(), "swag_data.json");
@@ -35,7 +26,12 @@ public class TestDataModel extends BaseTest {
         Assert.assertTrue(swagList.size() > 1);
 
         for (SwagModel model : swagList) {
-            Log.d("Branch TestDataModel", model.toString());
+            // Convert it to a String and back again to a model
+            String jsonString = model.toString();
+            JSONObject testObject = new JSONObject(jsonString);
+
+            SwagModel testModel = new SwagModel(testObject);
+            Assert.assertEquals(model.getId(), testModel.getId());
         }
     }
 }

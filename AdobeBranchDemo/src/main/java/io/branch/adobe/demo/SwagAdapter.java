@@ -55,19 +55,19 @@ public class SwagAdapter extends ArrayAdapter<SwagModel> {
         return v;
     }
 
-    private int findImageResource(int swagId) {
+    static int findImageResource(int swagId) {
         // This is a little contrived for demo purposes
         int id = android.R.drawable.ic_dialog_alert;
 
         switch(swagId) {
             case 1:
                 // Glasses
-                id = android.R.drawable.btn_star;
+                id = R.mipmap.glasses;
                 break;
 
             case 2:
                 // Stickers
-                id = android.R.drawable.btn_radio;
+                id = R.mipmap.stickers;
                 break;
         }
 

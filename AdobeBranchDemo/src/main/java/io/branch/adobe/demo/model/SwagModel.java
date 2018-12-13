@@ -17,7 +17,7 @@ public class SwagModel {
      * Constructor.
      * @param jsonObject JSONObject
      */
-    private SwagModel(JSONObject jsonObject) {
+    public SwagModel(JSONObject jsonObject) {
         try {
             mId = jsonObject.getInt("id");
             mTitle = jsonObject.getString("title");
@@ -46,11 +46,33 @@ public class SwagModel {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getTitle());
-        sb.append(" -- ");
-        sb.append(getDescription());
+        sb.append("{");
+
+        sb.append(JSONPair("id", getId()));
+        sb.append(",");
+
+        sb.append(JSONPair("title", getTitle()));
+        sb.append(",");
+
+        sb.append(JSONPair("description", getDescription()));
+        sb.append(",");
+
+        sb.append(JSONPair("price", getPrice()));
+
+        sb.append("}");
 
         return sb.toString();
+    }
+
+    private String JSONPair(String key, String value) {
+        return quote(key) + ":" + quote(value);
+    }
+    private String JSONPair(String key, Number value) {
+        return quote(key) + ":" + value;
+    }
+
+    private String quote(String str) {
+        return "\"" + str + "\"";
     }
 
     /**

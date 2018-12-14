@@ -20,7 +20,7 @@ import io.branch.referral.*;
 
 public class DemoApplication extends Application {
     private static final String TAG = "DemoApplication::";
-    private static final String ADOBE_APP_ID = "launch-ENf4e5fbcc0c5945de846341e9332df247-development";
+    private static final String ADOBE_APP_ID = "launch-EN1357dc725b8544bd8adc1b4f4ab4c970-development";
 
     @Override
     public void onCreate() {

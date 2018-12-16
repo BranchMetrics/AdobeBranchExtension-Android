@@ -20,12 +20,23 @@ public class AdobeBranch {
     public static final String KEY_TAX              = "tax";
     public static final String KEY_TRANSACTION_ID   = "transaction_id";
 
-    // TODO; Revisit.  This does not do anything that Branch doesn't already do.
+    /**
+     * Singleton method to return the pre-initialized, or newly initialize and return, a singleton
+     * object of the type {@link Branch}.
+     * @param context A {@link Context} from which this call was made.
+     * @return An initialized {@link Branch} object
+     */
     public static Branch getAutoInstance(@NonNull Context context) {
         return Branch.getAutoInstance(context);
     }
 
-    // TODO; Revisit.  This does not do anything that Branch doesn't already do.
+    /**
+     * <p>Initializes a session with the Branch API.
+     * @param callback A listener that will be called following successful (or unsuccessful)
+     *                 initialization of the session with the Branch API.
+     * @return A {@link Boolean} value, indicating <i>false</i> if initialization is
+     * unsuccessful.
+     */
     public static boolean initSession(Branch.BranchReferralInitListener callback) {
         Branch branch = Branch.getInstance();
         if (branch != null) {

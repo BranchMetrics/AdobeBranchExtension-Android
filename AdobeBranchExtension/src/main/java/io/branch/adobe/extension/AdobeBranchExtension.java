@@ -37,14 +37,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     }
 
     @Override
-    public void onUnregistered() {
-        // this method will be called when the extension is unregistered from the
-        // Event Hub in order for you to perform the necessary cleanup
-
-        // TODO: Handle Unregister
-    }
-
-    @Override
     public void error(ExtensionError extensionError) {
         // something went wrong...
         // TODO: What to do about it.

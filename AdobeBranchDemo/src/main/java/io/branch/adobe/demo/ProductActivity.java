@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import java.util.List;
 
 import io.branch.adobe.demo.model.SwagModel;
+import io.branch.adobe.extension.AdobeBranch;
 import io.branch.indexing.BranchUniversalObject;
 import io.branch.referral.Branch;
 import io.branch.referral.BranchError;
@@ -75,7 +76,7 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     private void initBranchSession() {
-        Branch.getInstance().initSession(new Branch.BranchReferralInitListener() {
+        AdobeBranch.initSession(new Branch.BranchReferralInitListener() {
             @Override
             public void onInitFinished(JSONObject referringParams, BranchError error) {
                 Log.d(TAG, "JSON: " + referringParams.toString());

@@ -209,10 +209,15 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return context;
     }
 
-    // TODO: Debug Code.  Remove before shipping.
-//    private void enumerateMap(String tag, Map<String, Object> map) {
+      // Debug Code
+//    private void enumerateMap(String tag, Event event) {
+//        Map<String, Object> eventData = event.getEventData();
+//        if (eventData == null) {
+//            return;
+//        }
+//
 //        Log.d(TAG, "===" + tag + "====================");
-//        for (Map.Entry<String, Object> pair : map.entrySet()) {
+//        for (Map.Entry<String, Object> pair : eventData.entrySet()) {
 //            Log.d(TAG, "Key: " + pair.getKey() + "\t" + pair.getValue().toString());
 //        }
 //        Log.d(TAG, "===" + tag + "====================");

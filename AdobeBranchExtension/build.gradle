@@ -33,8 +33,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // Branch
-    compileOnly 'io.branch.sdk.android:library:3.0.3'
-    //implementation 'com.android.installreferrer:installreferrer:1.0'
+    api 'io.branch.sdk.android:library:3.0.3'
 
     // Adobe
     implementation 'com.adobe.marketing.mobile:userprofile:1.+'

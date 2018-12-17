@@ -11,6 +11,7 @@ public class SwagModel {
     private int mId;
     private String mTitle;
     private String mDescription;
+    private String mImageUrl;
     private double mPrice;
 
     /**
@@ -22,6 +23,7 @@ public class SwagModel {
             mId = jsonObject.getInt("id");
             mTitle = jsonObject.getString("title");
             mDescription = jsonObject.getString("description");
+            mImageUrl = jsonObject.getString("image_url");
             mPrice = jsonObject.getDouble("price");
         } catch (JSONException e) {
         }
@@ -37,6 +39,10 @@ public class SwagModel {
 
     public String getDescription() {
         return mDescription;
+    }
+
+    public String getImageUrl() {
+        return mImageUrl;
     }
 
     public double getPrice() {
@@ -55,6 +61,9 @@ public class SwagModel {
         sb.append(",");
 
         sb.append(JSONPair("description", getDescription()));
+        sb.append(",");
+
+        sb.append(JSONPair("image_url", getImageUrl()));
         sb.append(",");
 
         sb.append(JSONPair("price", getPrice()));

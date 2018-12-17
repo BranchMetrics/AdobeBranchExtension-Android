@@ -123,6 +123,8 @@ public class SwagActivity extends AppCompatActivity implements View.OnClickListe
 
     private void shareProduct() {
         BranchUniversalObject buo = new BranchUniversalObject();
+        buo.setContentImageUrl(mSwagModel.getImageUrl());
+
         LinkProperties linkProperties = new LinkProperties();
         linkProperties.addControlParameter(SWAG_ID, Integer.toString(mSwagModel.getId()));
 

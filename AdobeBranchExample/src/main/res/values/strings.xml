@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Adobe Branch Demo</string>
+    <string name="app_name">Adobe Branch Example</string>
 
     <string name="purchase">Purchase!</string>
     <string name="share">Share!</string>

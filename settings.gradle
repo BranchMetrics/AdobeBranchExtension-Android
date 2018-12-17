@@ -1,1 +1,1 @@
-include ':AdobeBranchDemo', ':AdobeBranchExtension'
+include ':AdobeBranchExample', ':AdobeBranchExtension'

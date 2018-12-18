@@ -42,14 +42,17 @@ Here's a brief outline of how to use the AdobeBranchExtension in your app:
 
         implementation 'io.branch.sdk.android:adobebranch:1.0.0'
 
-6. Register the Branch `AdobeBranchExtension` with `MobileCore` in `didFinishLaunchingWithOptions`:
+6. Register the Branch `AdobeBranchExtension` with `MobileCore` in `configureWithAppID`:
 
 ```
     private static final String MY_ADOBE_APP_ID = "launch-{adobe app guid}-development";
 
     ...
+    // Initialize the AdobeBranch SDK
+    AdobeBranch.getAutoInstance(this);
+    
+    // Initialize the Adobe SDK
     MobileCore.setApplication(this);
-
     MobileCore.start(new AdobeCallback () {
         @Override
         public void call(Object o) {

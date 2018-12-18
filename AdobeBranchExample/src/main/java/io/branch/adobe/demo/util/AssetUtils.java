@@ -1,4 +1,4 @@
-package io.branch.sample.testadobebranch.util;
+package io.branch.adobe.demo.util;
 
 import android.content.Context;
 

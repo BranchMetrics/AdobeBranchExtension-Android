@@ -17,13 +17,13 @@ import org.json.JSONObject;
 import java.util.List;
 
 import io.branch.adobe.demo.model.SwagModel;
+import io.branch.adobe.demo.util.AssetUtils;
 import io.branch.adobe.extension.AdobeBranch;
 import io.branch.indexing.BranchUniversalObject;
 import io.branch.referral.Branch;
 import io.branch.referral.BranchError;
 import io.branch.referral.util.LinkProperties;
 import io.branch.referral.util.ShareSheetStyle;
-import io.branch.sample.testadobebranch.util.AssetUtils;
 
 public class ProductActivity extends AppCompatActivity {
     private static final String TAG = "Branch::ProductActivity";
@@ -51,6 +51,11 @@ public class ProductActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         initBranchSession();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        this.setIntent(intent);
     }
 
     private void initList() {
@@ -99,7 +104,7 @@ public class ProductActivity extends AppCompatActivity {
                     // internal error; id is not a number.
                 }
             }
-        });
+        }, getIntent().getData(), this);
     }
 
     private void shareProduct() {

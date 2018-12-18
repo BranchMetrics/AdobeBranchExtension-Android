@@ -33,7 +33,6 @@ public class SwagActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final String SWAG_DATA = "swag";
     public static final String SWAG_ID = "swag_id";
-    public static final String EXTRA_USERACTION = "extra_user";
 
     private SwagModel mSwagModel;
 

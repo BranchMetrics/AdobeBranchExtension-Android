@@ -10,9 +10,7 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 import io.branch.adobe.demo.model.SwagModel;
-import io.branch.sample.testadobebranch.util.AssetUtils;
-
-import static org.junit.Assert.*;
+import io.branch.adobe.demo.util.AssetUtils;
 
 @RunWith(AndroidJUnit4.class)
 public class TestDataModel extends BaseTest {

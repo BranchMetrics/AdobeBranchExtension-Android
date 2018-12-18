@@ -1,0 +1,10 @@
+<resources>
+    <!-- Standard definitions for match_parent and wrap_content -->
+    <item name="match_parent" format="integer" type="dimen">-1</item>
+    <item name="wrap_content" format="integer" type="dimen">-2</item>
+
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="card_height">@dimen/wrap_content</dimen>
+    <dimen name="content_icon_size">90dp</dimen>
+</resources>

@@ -40,7 +40,7 @@ Here's a brief outline of how to use the AdobeBranchExtension in your app:
 
 5. Add the AdobeBranchExtension to your app's build.gradle.
 
-        implementation 'io.branch.sdk.android:adobebranch:1.0.0'
+        implementation 'io.branch.sdk.android:adobebranchextension:1.+'
 
 6. Register the Branch `AdobeBranchExtension` with `MobileCore` in `configureWithAppID`:
 

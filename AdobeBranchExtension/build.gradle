@@ -24,6 +24,10 @@ android {
 
 }
 
+configurations {
+    javadocDeps
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -34,9 +38,43 @@ dependencies {
 
     // Branch
     api 'io.branch.sdk.android:library:3.0.3'
+    javadocDeps 'io.branch.sdk.android:library:3.0.3'
 
     // Adobe
-    implementation 'com.adobe.marketing.mobile:userprofile:1.+'
-    implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
-
+    implementation 'com.adobe.marketing.mobile:userprofile:1.0.1'
+    implementation 'com.adobe.marketing.mobile:sdk-core:1.0.5'
 }
+
+//------------- Javadocs ---------------//
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+}
+
+task docs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath = files(((Object) android.bootClasspath.join(File.pathSeparator)))
+}
+
+task javadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.javadocDeps
+
+    exclude '**/R.html', '**/R.*.html', '**/index.html'
+
+    options {
+        links "http://docs.oracle.com/javase/8/docs/api/"
+        linksOffline "http://d.android.com/reference","${android.sdkDirectory}/docs/reference"
+
+        tags = [ "apiNote", "implSpec", "implNote" ]
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadocs) {
+    classifier = 'javadoc'
+    from javadocs.destinationDir
+}
+
+apply from: 'https://raw.githubusercontent.com/BranchMetrics/GradleToMavenOptionalDependencies/master/gradle-maven-push.gradle'

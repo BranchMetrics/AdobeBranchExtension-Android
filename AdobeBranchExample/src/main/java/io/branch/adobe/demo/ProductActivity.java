@@ -11,9 +11,13 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import com.adobe.marketing.mobile.Event;
+import com.adobe.marketing.mobile.MobileCore;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.branch.adobe.demo.model.SwagModel;
@@ -41,6 +45,14 @@ public class ProductActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 shareProduct();
+            }
+        });
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                testProduct("testEventFails");  // This one should not be attributed
+                testProduct("testEventSucceeds");  // This one should succeed (see registerWhitelistEvents)
+                return true;
             }
         });
 
@@ -105,6 +117,9 @@ public class ProductActivity extends AppCompatActivity {
                 }
             }
         }, getIntent().getData(), this);
+
+        // WhiteList a couple of events.
+        registerWhitelistEvents();
     }
 
     private void shareProduct() {
@@ -129,6 +144,25 @@ public class ProductActivity extends AppCompatActivity {
             }
         }
         return null;
+    }
+
+    private void registerWhitelistEvents() {
+        List<String> apiWhitelist = new ArrayList<>();
+        apiWhitelist.add("testEvent1");
+        apiWhitelist.add("testEvent2");
+        apiWhitelist.add("testEventSucceeds");
+
+        AdobeBranch.registerAdobeBranchEvents(apiWhitelist);
+    }
+
+    private void testProduct(String eventName) {
+        Event newEvent = new Event.Builder(eventName,
+                "com.adobe.eventType.generic.track",
+                "com.adobe.eventSource.requestContent")
+                .build();
+
+        // dispatch the test event
+        MobileCore.dispatchEvent(newEvent, null);
     }
 
 }

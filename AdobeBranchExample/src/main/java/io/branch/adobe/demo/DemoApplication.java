@@ -33,7 +33,7 @@ public class DemoApplication extends Application {
     }
 
     private void initBranch() {
-        Branch.enableLogging();
+        Branch.enableDebugMode();
 
         // TODO: Revisit.  This is how we should encourage customers to initialize Branch using Branch.
         // Branch.getAutoInstance(this);
@@ -78,4 +78,5 @@ public class DemoApplication extends Application {
             Log.e(TAG, "Failed to register the AdobeBranchExtension extension");
         }
     }
+
 }

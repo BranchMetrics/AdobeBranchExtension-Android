@@ -1,7 +1,6 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.branch.referral.Branch;
+import io.branch.referral.PrefHelper;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
 import io.branch.referral.util.CurrencyType;
@@ -50,7 +50,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     public void error(ExtensionError extensionError) {
         // something went wrong...
         // TODO: What to do about it.
-        Log.e(TAG, String.format("An error occurred in the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+        PrefHelper.Debug(TAG + String.format("An error occurred in the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
     }
 
     private void initExtension() {
@@ -77,7 +77,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         } else if (isTrackedEvent(event)) {
             handleEvent(event);
         } else {
-            Log.v(TAG, "Event Dropped: " + event.getName());
+            PrefHelper.Debug(TAG + "Event Dropped: " + event.getName());
         }
     }
 
@@ -122,7 +122,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
                 } catch (Exception e) {
                     // Internal Error.
-                    Log.e(TAG, "handleBranchConfigurationEvent Exception", e);
+                    PrefHelper.LogAlways(TAG + "handleBranchConfigurationEvent Exception" + e.getMessage());
                 }
             } else if (object == null) {
                 apiWhitelist = null;
@@ -144,7 +144,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
                 branchEvent.logEvent(getAdobeContext());
             } catch(Exception e) {
-                Log.e(TAG, "handleTrackEvent Exception", e);
+                PrefHelper.LogAlways(TAG + "handleTrackEvent Exception" + e.getMessage());
             }
         }
     }
@@ -269,7 +269,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
             context = (Context)appContext.get(null);
         } catch (Exception e) {
-            Log.e(TAG, "Unable to obtain Context", e);
+            PrefHelper.LogAlways(TAG + "Unable to obtain Context");
         }
 
         return context;

@@ -27,7 +27,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventtype.configuration";
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
 
-    private List<String> apiWhitelist;
+    private List<AdobeBranch.EventTypeSource> apiWhitelist;
 
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
@@ -54,9 +54,13 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     }
 
     private void initExtension() {
-        // Register an Event Listener for track events
-        getApi().registerEventListener(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE, AdobeBranchExtensionListener.class, this);
-        getApi().registerEventListener(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE, AdobeBranchExtensionListener.class, this);
+        // Register default Event Listeners
+        registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
+        registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
+    }
+
+    private void registerExtension(String eventType, String eventSource) {
+        getApi().registerEventListener(eventType, eventSource, AdobeBranchExtensionListener.class, this);
     }
 
     // Package Private
@@ -70,13 +74,25 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         if (isBranchConfigurationEvent(event)) {
             handleBranchConfigurationEvent(event);
-        } else if (isAdobeTrackEvent(event)) {
-            handleTrackEvent(event);
+        } else if (isTrackedEvent(event)) {
+            handleEvent(event);
+        } else {
+            Log.v(TAG, "Event Dropped: " + event.getName());
         }
     }
 
-    private boolean isAdobeTrackEvent(final Event event) {
-        return (event.getType().equals(ADOBE_TRACK_EVENT) && event.getSource().equals(ADOBE_EVENT_SOURCE));
+    private boolean isTrackedEvent(final Event event) {
+        if (apiWhitelist == null) {
+            return (event.getType().equals(ADOBE_TRACK_EVENT) && event.getSource().equals(ADOBE_EVENT_SOURCE));
+        }
+
+        for (AdobeBranch.EventTypeSource pair : apiWhitelist) {
+            if (pair.getType().equals(event.getType()) && pair.getSource().equals(event.getSource())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean isBranchConfigurationEvent(final Event event) {
@@ -88,7 +104,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
      * This is sent by Adobe, in response to {@link AdobeBranch} Configuration methods
      * @param event Adobe Branch Event
      */
-    @SuppressWarnings("unchecked")  // Cast Conversion to List<String>
+    @SuppressWarnings("unchecked")  // Cast Conversion to List<EventTypeSource>
     private void handleBranchConfigurationEvent(final Event event) {
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
@@ -97,12 +113,21 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             // We expect this to be a List of Strings.
             if (object instanceof List<?>) {
                 try {
-                    apiWhitelist = (List<String>)object;
+                    apiWhitelist = (List<AdobeBranch.EventTypeSource>)object;
+
+                    // For each pair in the whitelist, register the extension
+                    for (AdobeBranch.EventTypeSource pair : apiWhitelist) {
+                        registerExtension(pair.getType(), pair.getSource());
+                    }
+
                 } catch (Exception e) {
                     // Internal Error.
                     Log.e(TAG, "handleBranchConfigurationEvent Exception", e);
                 }
+            } else if (object == null) {
+                apiWhitelist = null;
             }
+
         }
     }
 
@@ -111,7 +136,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
      * This is sent by Adobe, in response to a dispatchEvent
      * @param event Adobe Event
      */
-    private void handleTrackEvent(final Event event) {
+    private void handleEvent(final Event event) {
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
             try {
@@ -137,23 +162,16 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             }
 
             if (branchEvent == null) {
-                // This is considered a "Custom" event.  Check the whitelist.
-                // TODO: Consider using regular expressions to check.
-                if (apiWhitelist != null && apiWhitelist.contains(event.getName())) {
-                    branchEvent = new BranchEvent(event.getName());
-                } else {
-                    Log.v(TAG, "Event Dropped: " + event.getName());
-                }
+                // This is considered a "Custom" event.
+                branchEvent = new BranchEvent(event.getName());
             }
 
-            if (branchEvent != null) {
-                for (Map.Entry<String, Object> pair : eventData.entrySet()) {
-                    String key = pair.getKey();
-                    Object obj = pair.getValue();
+            for (Map.Entry<String, Object> pair : eventData.entrySet()) {
+                String key = pair.getKey();
+                Object obj = pair.getValue();
 
-                    if (!addStandardProperty(branchEvent, key, obj)) {
-                        branchEvent.addCustomDataProperty(key, obj.toString());
-                    }
+                if (!addStandardProperty(branchEvent, key, obj)) {
+                    branchEvent.addCustomDataProperty(key, obj.toString());
                 }
             }
         }

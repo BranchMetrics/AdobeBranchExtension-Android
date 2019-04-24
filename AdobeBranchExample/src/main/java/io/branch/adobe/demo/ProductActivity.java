@@ -50,8 +50,7 @@ public class ProductActivity extends AppCompatActivity {
         fab.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                testProduct("testEventFails");  // This one should not be attributed
-                testProduct("testEventSucceeds");  // This one should succeed (see registerWhitelistEvents)
+                testWhitelistEvents();
                 return true;
             }
         });
@@ -117,9 +116,6 @@ public class ProductActivity extends AppCompatActivity {
                 }
             }
         }, getIntent().getData(), this);
-
-        // WhiteList a couple of events.
-        registerWhitelistEvents();
     }
 
     private void shareProduct() {
@@ -146,23 +142,56 @@ public class ProductActivity extends AppCompatActivity {
         return null;
     }
 
-    private void registerWhitelistEvents() {
-        List<String> apiWhitelist = new ArrayList<>();
-        apiWhitelist.add("testEvent1");
-        apiWhitelist.add("testEvent2");
-        apiWhitelist.add("testEventSucceeds");
+    // Test
+    private void testWhitelistEvents() {
+        // Register to listen for specific events
+        List<AdobeBranch.EventTypeSource> apiWhitelist = new ArrayList<>();
+        apiWhitelist.add(new AdobeBranch.EventTypeSource("com.adobe.eventType.generic.track", "com.adobe.eventSource.requestContent"));
+        apiWhitelist.add(new AdobeBranch.EventTypeSource("io.branch.eventType.generic.track", "io.branch.eventSource.requestContent"));
 
         AdobeBranch.registerAdobeBranchEvents(apiWhitelist);
-    }
 
-    private void testProduct(String eventName) {
-        Event newEvent = new Event.Builder(eventName,
+        // 1) Test a standard adobe event
+        Event event = new Event.Builder("TestEvent1",
                 "com.adobe.eventType.generic.track",
                 "com.adobe.eventSource.requestContent")
                 .build();
+        MobileCore.dispatchEvent(event, null);
 
-        // dispatch the test event
-        MobileCore.dispatchEvent(newEvent, null);
+        // 2) Test a whitelisted branch event
+        event = new Event.Builder("TestEvent2",
+                "io.branch.eventType.generic.track",
+                "io.branch.eventSource.requestContent")
+                .build();
+        MobileCore.dispatchEvent(event, null);
+
+        // 3) Test a non-whitelisted event.  This should be dropped
+        event = new Event.Builder("TestEvent3",
+                "com.test.eventType.generic.track",
+                "com.test.eventSource.requestContent")
+                .build();
+        MobileCore.dispatchEvent(event, null);
+
+
+        // Unregister listeners and make sure that all messages are dropped.
+        apiWhitelist = new ArrayList<>();
+        AdobeBranch.registerAdobeBranchEvents(apiWhitelist);
+
+        // 4) Test a standard adobe event
+        event = new Event.Builder("TestEvent4",
+                "com.adobe.eventType.generic.track",
+                "com.adobe.eventSource.requestContent")
+                .build();
+        MobileCore.dispatchEvent(event, null);
+
+        // 5) Test a non-whitelisted branch event
+        event = new Event.Builder("TestEvent5",
+                "io.branch.eventType.generic.track",
+                "io.branch.eventSource.requestContent")
+                .build();
+        MobileCore.dispatchEvent(event, null);
+
+
     }
 
 }

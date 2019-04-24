@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Pair;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.MobileCore;
@@ -61,10 +62,13 @@ public class AdobeBranch {
     }
 
     /**
-     * Register a whitelist of additional Event Names to send to Branch.
-     * Note that this list extends the {@link io.branch.referral.util.BRANCH_STANDARD_EVENT}.
+     * Register a whitelist of Event Types and Event Sources to send to Branch.
+     * @param additionalEvents Additional events to listen for.
+     *                         If empty, this extension will not listen for any events.
+     *                         If null, this extension will default to listen for all Adobe events.
+     *                         If non-empty, will listen for only those events that are in the list.
      */
-    public static void registerAdobeBranchEvents(List<String> additionalEvents) {
+    public static void registerAdobeBranchEvents(List<EventTypeSource> additionalEvents) {
         Map<String, Object> eventData = new HashMap<>();
 
         eventData.put(AdobeBranch.KEY_APICONFIGURATION, additionalEvents);
@@ -76,5 +80,34 @@ public class AdobeBranch {
 
         // dispatch the analytics event
         MobileCore.dispatchEvent(newEvent, null);
+    }
+
+    /**
+     * Pair for holding an Event Type and Event Source.
+     */
+    public static class EventTypeSource extends Pair<String, String> {
+        /**
+         * Constructor.
+         *
+         * @param type  Event Type
+         * @param source Event Source
+         */
+        public EventTypeSource(String type, String source) {
+            super(type.toLowerCase(), source.toLowerCase());
+        }
+
+        /**
+         * @return the Event Type
+         */
+        public final String getType() {
+            return this.first;
+        }
+
+        /**
+         * @return the Event Source
+         */
+        public final String getSource() {
+            return this.second;
+        }
     }
 }

@@ -105,13 +105,19 @@ Here's an example of tracking app state via Adobe Launch:
         MobileCore.dispatchEvent(newEvent, this);
     }
 
-Note that Branch Standard Events are whitelisted by default.  To track events with custom names you can register a whitelist as follows:
+Note that all Adobe Events are processed by default.  To track events with custom names you can register a whitelist as follows:
 
-    List<String> apiWhitelist = new ArrayList<>();
-    apiWhitelist.add("myCustomEvent1");
-    apiWhitelist.add("myCustomEvent2");
+    List<AdobeBranch.EventTypeSource> apiWhitelist = new ArrayList<>();
+    apiWhitelist.add(new AdobeBranch.EventTypeSource("com.adobe.eventType.generic.track", "com.adobe.eventSource.requestContent"));
+    apiWhitelist.add(new AdobeBranch.EventTypeSource("io.branch.eventType.generic.track", "io.branch.eventSource.requestContent"));
 
     AdobeBranch.registerAdobeBranchEvents(apiWhitelist);
+
+Additional Implementation Notes:
+
+* An empty whitelist will not listen for any events.
+* A null whitelist (default) will listen for all Adobe events.
+* A non-empty whitelist will listen for only those events that are in the list.
 
 
 ## Author

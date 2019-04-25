@@ -43,12 +43,6 @@ public class ProductActivity extends AppCompatActivity {
                 shareProduct();
             }
         });
-        fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                return true;
-            }
-        });
 
         initList();
     }

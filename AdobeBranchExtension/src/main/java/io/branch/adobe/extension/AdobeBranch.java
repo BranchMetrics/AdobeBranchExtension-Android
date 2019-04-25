@@ -67,8 +67,9 @@ public class AdobeBranch {
      *                         If empty, this extension will not listen for any events.
      *                         If null, this extension will default to listen for all Adobe events.
      *                         If non-empty, will listen for only those events that are in the list.
+     * @return true if the configuration was successful
      */
-    public static void registerAdobeBranchEvents(List<EventTypeSource> additionalEvents) {
+    public static boolean registerAdobeBranchEvents(List<EventTypeSource> additionalEvents) {
         Map<String, Object> eventData = new HashMap<>();
 
         eventData.put(AdobeBranch.KEY_APICONFIGURATION, additionalEvents);
@@ -79,7 +80,7 @@ public class AdobeBranch {
                 .setEventData(eventData).build();
 
         // dispatch the analytics event
-        MobileCore.dispatchEvent(newEvent, null);
+        return MobileCore.dispatchEvent(newEvent, null);
     }
 
     /**

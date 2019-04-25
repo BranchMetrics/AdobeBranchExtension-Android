@@ -65,7 +65,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     // Package Private
     void handleAdobeEvent(final Event event) {
-//        Log.v(TAG, String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
+        PrefHelper.Debug(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
@@ -108,6 +108,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     private void handleBranchConfigurationEvent(final Event event) {
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
+            PrefHelper.Debug("Configuring AdobeBranch");
+
             Object object = eventData.get(AdobeBranch.KEY_APICONFIGURATION);
 
             // We expect this to be a List of Strings.
@@ -127,7 +129,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             } else if (object == null) {
                 apiWhitelist = null;
             }
-
         }
     }
 
@@ -140,7 +141,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
             try {
-                // Log.v(TAG, "Track BranchEvent: " + branchEvent.getEventName());
+                PrefHelper.Debug(TAG + "Track BranchEvent: " + branchEvent.getEventName());
 
                 branchEvent.logEvent(getAdobeContext());
             } catch(Exception e) {

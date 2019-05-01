@@ -97,6 +97,7 @@ public class SwagActivity extends AppCompatActivity implements View.OnClickListe
             JSONObject jsonObject = new JSONObject(swagData);
             mSwagModel = new SwagModel(jsonObject);
         } catch (JSONException e) {
+            // Handled
         }
 
         if (mSwagModel != null) {

@@ -1,7 +1,6 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
@@ -10,15 +9,26 @@ import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 import io.branch.referral.Branch;
+import io.branch.referral.PrefHelper;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
 import io.branch.referral.util.CurrencyType;
 
 public class AdobeBranchExtension extends Extension implements ExtensionErrorCallback<ExtensionError> {
     private static final String TAG = "AdobeBranchExtension::";
+
+    private static final String ADOBE_TRACK_EVENT = "com.adobe.eventtype.generic.track";
+    private static final String ADOBE_EVENT_SOURCE = "com.adobe.eventsource.requestcontent";
+
+    static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventtype.configuration";
+    static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
+
+    private List<AdobeBranch.EventTypeSource> apiWhitelist;
+
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
@@ -40,30 +50,86 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     public void error(ExtensionError extensionError) {
         // something went wrong...
         // TODO: What to do about it.
-        Log.e(TAG, String.format("An error occurred in the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+        PrefHelper.Debug(TAG + String.format("An error occurred in the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
     }
 
     private void initExtension() {
-        // Register an Event Listener for track events
-        getApi().registerEventListener("com.adobe.eventtype.generic.track", "com.adobe.eventsource.requestcontent", AdobeBranchExtensionListener.class, this);
+        // Register default Event Listeners
+        registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
+        registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
+    }
+
+    private void registerExtension(String eventType, String eventSource) {
+        getApi().registerEventListener(eventType, eventSource, AdobeBranchExtensionListener.class, this);
     }
 
     // Package Private
     void handleAdobeEvent(final Event event) {
-        Log.v(TAG, String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
+        PrefHelper.Debug(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
             return;
         }
 
-        if (isAdobeTrackEvent(event)) {
-            handleTrackEvent(event);
+        if (isBranchConfigurationEvent(event)) {
+            handleBranchConfigurationEvent(event);
+        } else if (isTrackedEvent(event)) {
+            handleEvent(event);
+        } else {
+            PrefHelper.Debug(TAG + "Event Dropped: " + event.getName());
         }
     }
 
-    private boolean isAdobeTrackEvent(final Event event) {
-        return (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent"));
+    private boolean isTrackedEvent(final Event event) {
+        if (apiWhitelist == null) {
+            return (event.getType().equals(ADOBE_TRACK_EVENT) && event.getSource().equals(ADOBE_EVENT_SOURCE));
+        }
+
+        for (AdobeBranch.EventTypeSource pair : apiWhitelist) {
+            if (pair.getType().equals(event.getType()) && pair.getSource().equals(event.getSource())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isBranchConfigurationEvent(final Event event) {
+        return (event.getType().equals(BRANCH_CONFIGURATION_EVENT) && event.getSource().equals(BRANCH_EVENT_SOURCE));
+    }
+
+    /**
+     * Handle the Branch Configuration Event
+     * This is sent by Adobe, in response to {@link AdobeBranch} Configuration methods
+     * @param event Adobe Branch Event
+     */
+    @SuppressWarnings("unchecked")  // Cast Conversion to List<EventTypeSource>
+    private void handleBranchConfigurationEvent(final Event event) {
+        Map<String, Object> eventData = event.getEventData();
+        if (eventData != null) {
+            PrefHelper.Debug("Configuring AdobeBranch");
+
+            Object object = eventData.get(AdobeBranch.KEY_APICONFIGURATION);
+
+            // We expect this to be a List of Strings.
+            if (object instanceof List<?>) {
+                try {
+                    apiWhitelist = (List<AdobeBranch.EventTypeSource>)object;
+
+                    // For each pair in the whitelist, register the extension
+                    for (AdobeBranch.EventTypeSource pair : apiWhitelist) {
+                        registerExtension(pair.getType(), pair.getSource());
+                    }
+
+                } catch (Exception e) {
+                    // Internal Error.
+                    PrefHelper.LogAlways(TAG + "handleBranchConfigurationEvent Exception" + e.getMessage());
+                }
+            } else if (object == null) {
+                apiWhitelist = null;
+            }
+        }
     }
 
     /**
@@ -71,13 +137,15 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
      * This is sent by Adobe, in response to a dispatchEvent
      * @param event Adobe Event
      */
-    private void handleTrackEvent(final Event event) {
+    private void handleEvent(final Event event) {
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
             try {
+                PrefHelper.Debug(TAG + "Track BranchEvent: " + branchEvent.getEventName());
+
                 branchEvent.logEvent(getAdobeContext());
             } catch(Exception e) {
-                Log.e(TAG, "handleTrackEvent Exception", e);
+                PrefHelper.LogAlways(TAG + "handleTrackEvent Exception" + e.getMessage());
             }
         }
     }
@@ -95,10 +163,9 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             }
 
             if (branchEvent == null) {
-                // This is considered a "Custom" event
+                // This is considered a "Custom" event.
                 branchEvent = new BranchEvent(event.getName());
             }
-
 
             for (Map.Entry<String, Object> pair : eventData.entrySet()) {
                 String key = pair.getKey();
@@ -203,7 +270,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
             context = (Context)appContext.get(null);
         } catch (Exception e) {
-            Log.e(TAG, "Unable to dig Context out", e);
+            PrefHelper.LogAlways(TAG + "Unable to obtain Context");
         }
 
         return context;

@@ -73,7 +73,7 @@ Once you've added the AdobeBranchExtension and Branch, you can always use Branch
 When you track actions and state in Adobe Launch, the action and state messages are sent to Branch too and shown on the
 Branch dashboards. This allows you to track the effectiveness of deep link campaigns and viral sharing in your app's actions.
 
-Here's an example of tracking app state via Adobe Launch:
+Here's an example of tracking a "Purchase" event via Adobe Launch:
 
     private void doPurchase(View view) {
         Long timestamp = System.currentTimeMillis()/1000;
@@ -104,6 +104,21 @@ Here's an example of tracking app state via Adobe Launch:
         // dispatch the analytics event
         MobileCore.dispatchEvent(newEvent, this);
     }
+
+Note that all Adobe Events are processed by default.  To optionally track events with custom names you can register a whitelist as follows:
+
+    List<AdobeBranch.EventTypeSource> apiWhitelist = new ArrayList<>();
+    apiWhitelist.add(new AdobeBranch.EventTypeSource("com.adobe.eventType.generic.track", "com.adobe.eventSource.requestContent"));
+    apiWhitelist.add(new AdobeBranch.EventTypeSource("io.branch.eventType.generic.track", "io.branch.eventSource.requestContent"));
+
+    AdobeBranch.registerAdobeBranchEvents(apiWhitelist);
+
+Additional Whitelist Configuration Implementation Notes:
+
+* Whitelist Configuration must happen after Adobe Initialization has completed.
+* An empty whitelist will not listen for any events.
+* A null whitelist (default) will listen for all Adobe events.
+* A non-empty whitelist will listen for only those events that are in the list.
 
 
 ## Author

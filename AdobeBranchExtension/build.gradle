@@ -37,12 +37,12 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // Branch
-    api 'io.branch.sdk.android:library:3.0.3'
-    javadocDeps 'io.branch.sdk.android:library:3.0.3'
+    api 'io.branch.sdk.android:library:3.1.1'
+    javadocDeps 'io.branch.sdk.android:library:3.1.1'
 
     // Adobe
-    implementation 'com.adobe.marketing.mobile:userprofile:1.0.1'
-    implementation 'com.adobe.marketing.mobile:sdk-core:1.0.5'
+    implementation 'com.adobe.marketing.mobile:userprofile:1+'
+    implementation 'com.adobe.marketing.mobile:sdk-core:1+'
 }
 
 //------------- Javadocs ---------------//

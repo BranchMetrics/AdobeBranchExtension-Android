@@ -1,9 +1,9 @@
 package io.branch.adobe.demo;
 
 import android.app.Application;
-import android.util.Log;
 
 import com.adobe.marketing.mobile.AdobeCallback;
+import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.Identity;
@@ -11,6 +11,7 @@ import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
 import com.adobe.marketing.mobile.LoggingMode;
 import com.adobe.marketing.mobile.MobileCore;
+import com.adobe.marketing.mobile.MobileServices;
 import com.adobe.marketing.mobile.Signal;
 import com.adobe.marketing.mobile.UserProfile;
 
@@ -21,6 +22,7 @@ import io.branch.referral.*;
 public class DemoApplication extends Application {
     private static final String TAG = "DemoApplication::";
     private static final String ADOBE_APP_ID = "launch-EN1357dc725b8544bd8adc1b4f4ab4c970-development";
+    private static final String ADOBE_APP_ID_WITH_ANALYTICS_DEV_ENV = "d10f76259195/cb088cf2d795/launch-14ca316fa2d3-development";
 
     @Override
     public void onCreate() {
@@ -40,7 +42,7 @@ public class DemoApplication extends Application {
     }
 
     private void initAdobeBranch() {
-        Log.d(TAG, "initAdobeBranch()");
+        PrefHelper.Debug("initAdobeBranch()");
 
         // TODO: Revisit.  We should encourage customers to initialize Branch using Branch.
         AdobeBranch.getAutoInstance(this);
@@ -49,6 +51,8 @@ public class DemoApplication extends Application {
         MobileCore.setLogLevel(LoggingMode.DEBUG);
 
         try {
+            MobileServices.registerExtension();
+            Analytics.registerExtension();
             UserProfile.registerExtension();
             Identity.registerExtension();
             Lifecycle.registerExtension();
@@ -56,26 +60,24 @@ public class DemoApplication extends Application {
             MobileCore.start(new AdobeCallback () {
                 @Override
                 public void call(Object o) {
-                    MobileCore.configureWithAppID(ADOBE_APP_ID);
+                    MobileCore.configureWithAppID(ADOBE_APP_ID_WITH_ANALYTICS_DEV_ENV);
                 }
             });
         } catch (InvalidInitException e) {
-            Log.e(TAG, "InitException", e);
+            PrefHelper.Debug("InitException: " + e.getLocalizedMessage());
         }
     }
 
     private void registerAdobeBranchExtension() {
-        MobileCore.setApplication(this);
-
         ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
             @Override
             public void error(final ExtensionError extensionError) {
-                Log.e(TAG, String.format("An error occurred while registering the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+                PrefHelper.Debug(String.format("An error occurred while registering the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
             }
         };
 
         if (!MobileCore.registerExtension(AdobeBranchExtension.class, errorCallback)) {
-            Log.e(TAG, "Failed to register the AdobeBranchExtension extension");
+            PrefHelper.Debug("Failed to register the AdobeBranchExtension extension");
         }
     }
 

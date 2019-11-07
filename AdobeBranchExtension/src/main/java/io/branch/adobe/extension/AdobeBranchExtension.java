@@ -1,12 +1,19 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
+import android.os.Handler;
+import android.util.Log;
 
+import com.adobe.marketing.mobile.AdobeCallback;
+import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
+import com.adobe.marketing.mobile.Identity;
+
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -23,6 +30,9 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     private static final String ADOBE_TRACK_EVENT = "com.adobe.eventtype.generic.track";
     private static final String ADOBE_EVENT_SOURCE = "com.adobe.eventsource.requestcontent";
+
+    private static final String ADOBE_CONFIGURATION_EVENT = "com.adobe.module.configuration";
+    private static final String ADOBE_IDENTITY_EVENT = "com.adobe.module.identity";
 
     static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventtype.configuration";
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
@@ -55,8 +65,9 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     private void initExtension() {
         // Register default Event Listeners
-        registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
-        registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
+//        registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
+//        registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
+        getApi().registerWildcardListener(AdobeBranchExtensionListener.class, this);
     }
 
     private void registerExtension(String eventType, String eventSource) {
@@ -71,6 +82,10 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             // Branch is not initialized.
             return;
         }
+
+        Map<String, Object> configurationSharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EVENT, event, this);
+        PrefHelper.Debug(String.format("The configuration when event %s was sent was: %s", event.getName(), new JSONObject(configurationSharedState)));
+        Log.i("AdobeExperienceSDK", String.format("The configuration when event %s was sent was: %s", event.getName(), new JSONObject(configurationSharedState)));
 
         if (isBranchConfigurationEvent(event)) {
             handleBranchConfigurationEvent(event);
@@ -231,7 +246,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             case AdobeBranch.KEY_TAX:
                 Double tax = asDouble(value);
                 if (tax != null) {
-                    event.setShipping(tax);
+                    event.setTax(tax);
                     return true;
                 }
                 break;

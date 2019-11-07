@@ -2,14 +2,21 @@ package io.branch.adobe.demo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.os.Handler;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.adobe.marketing.mobile.AdobeCallback;
+import com.adobe.marketing.mobile.Analytics;
+import com.adobe.marketing.mobile.Identity;
+import com.adobe.marketing.mobile.MobileCore;
+import com.adobe.marketing.mobile.VisitorID;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +29,7 @@ import io.branch.adobe.extension.AdobeBranch;
 import io.branch.indexing.BranchUniversalObject;
 import io.branch.referral.Branch;
 import io.branch.referral.BranchError;
+import io.branch.referral.PrefHelper;
 import io.branch.referral.util.LinkProperties;
 import io.branch.referral.util.ShareSheetStyle;
 
@@ -51,10 +59,38 @@ public class ProductActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         initBranchSession();
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Identity.getIdentifiers(new AdobeCallback<List<VisitorID>>() {
+//                    @Override
+//                    public void call(List<VisitorID> visitorIDS) {
+//                        PrefHelper.Debug("getIdentifiers callback called");
+//                        if (visitorIDS == null) {
+//                            PrefHelper.Debug("visitorIDS = null");
+//                            return;
+//                        }
+//                        int count = 0;
+//                        for (VisitorID vid : visitorIDS) {
+//                            PrefHelper.Debug(count + " vid = " + vid);
+//                            count++;
+//                        }
+//                    }
+//                });
+//
+//                Identity.getExperienceCloudId(new AdobeCallback<String>() {
+//                    @Override
+//                    public void call(String visitorID) {
+//                        PrefHelper.Debug("getExperienceCloudId, visitorID = " + visitorID);
+//                    }
+//                });
+//            }
+//        }, 5000);
     }
 
     @Override
     public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         this.setIntent(intent);
     }
 
@@ -76,7 +112,7 @@ public class ProductActivity extends AppCompatActivity {
             ListAdapter customAdapter = new SwagAdapter(this, R.layout.swag_item, swagModelList);
             listView.setAdapter(customAdapter);
         } catch (JSONException e) {
-            Log.e(TAG, "Error initializing List", e);
+            PrefHelper.Debug("Error initializing List: " + e.getLocalizedMessage());
         }
     }
 
@@ -84,7 +120,7 @@ public class ProductActivity extends AppCompatActivity {
         AdobeBranch.initSession(new Branch.BranchReferralInitListener() {
             @Override
             public void onInitFinished(JSONObject referringParams, BranchError error) {
-                Log.d(TAG, "JSON: " + referringParams.toString());
+                PrefHelper.Debug("JSON: " + referringParams.toString());
 
                 try {
                     // You would think that there was an easier way to figure this out than looking at LinkProperties code

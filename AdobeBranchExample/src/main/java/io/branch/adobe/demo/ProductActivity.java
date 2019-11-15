@@ -59,33 +59,6 @@ public class ProductActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         initBranchSession();
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                Identity.getIdentifiers(new AdobeCallback<List<VisitorID>>() {
-//                    @Override
-//                    public void call(List<VisitorID> visitorIDS) {
-//                        PrefHelper.Debug("getIdentifiers callback called");
-//                        if (visitorIDS == null) {
-//                            PrefHelper.Debug("visitorIDS = null");
-//                            return;
-//                        }
-//                        int count = 0;
-//                        for (VisitorID vid : visitorIDS) {
-//                            PrefHelper.Debug(count + " vid = " + vid);
-//                            count++;
-//                        }
-//                    }
-//                });
-//
-//                Identity.getExperienceCloudId(new AdobeCallback<String>() {
-//                    @Override
-//                    public void call(String visitorID) {
-//                        PrefHelper.Debug("getExperienceCloudId, visitorID = " + visitorID);
-//                    }
-//                });
-//            }
-//        }, 5000);
     }
 
     @Override

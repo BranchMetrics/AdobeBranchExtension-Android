@@ -1,17 +1,12 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
-import android.os.Handler;
-import android.util.Log;
 
-import com.adobe.marketing.mobile.AdobeCallback;
-import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
-import com.adobe.marketing.mobile.Identity;
 
 import org.json.JSONObject;
 
@@ -83,9 +78,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             return;
         }
 
-        Map<String, Object> configurationSharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EVENT, event, this);
-        PrefHelper.Debug(String.format("The configuration when event %s was sent was: %s", event.getName(), new JSONObject(configurationSharedState)));
-        Log.i("AdobeExperienceSDK", String.format("The configuration when event %s was sent was: %s", event.getName(), new JSONObject(configurationSharedState)));
+        Map<String, Object> identitySharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EVENT, null, this);
+        PrefHelper.Debug(String.format("The identitySharedState is: %s", new JSONObject(identitySharedState)));
 
         if (isBranchConfigurationEvent(event)) {
             handleBranchConfigurationEvent(event);

@@ -1,7 +1,5 @@
 package io.branch.adobe.demo;
 
-import android.app.Application;
-
 import com.adobe.marketing.mobile.AdobeCallback;
 import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.ExtensionError;
@@ -11,18 +9,17 @@ import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
 import com.adobe.marketing.mobile.LoggingMode;
 import com.adobe.marketing.mobile.MobileCore;
-import com.adobe.marketing.mobile.MobileServices;
 import com.adobe.marketing.mobile.Signal;
 import com.adobe.marketing.mobile.UserProfile;
 
+import android.app.Application;
 import io.branch.adobe.extension.AdobeBranch;
 import io.branch.adobe.extension.AdobeBranchExtension;
 import io.branch.referral.*;
 
 public class DemoApplication extends Application {
     private static final String TAG = "DemoApplication::";
-    private static final String ADOBE_APP_ID = "launch-EN1357dc725b8544bd8adc1b4f4ab4c970-development";
-    private static final String ADOBE_APP_ID_WITH_ANALYTICS_DEV_ENV = "d10f76259195/cb088cf2d795/launch-14ca316fa2d3-development";
+    private static final String ADOBE_APP_ID = "d10f76259195/b0503e1a5dce/launch-9948a3b3a89d-development";
 
     @Override
     public void onCreate() {
@@ -51,7 +48,6 @@ public class DemoApplication extends Application {
         MobileCore.setLogLevel(LoggingMode.DEBUG);
 
         try {
-            MobileServices.registerExtension();
             Analytics.registerExtension();
             UserProfile.registerExtension();
             Identity.registerExtension();
@@ -60,7 +56,7 @@ public class DemoApplication extends Application {
             MobileCore.start(new AdobeCallback () {
                 @Override
                 public void call(Object o) {
-                    MobileCore.configureWithAppID(ADOBE_APP_ID_WITH_ANALYTICS_DEV_ENV);
+                    MobileCore.configureWithAppID(ADOBE_APP_ID);
                 }
             });
         } catch (InvalidInitException e) {

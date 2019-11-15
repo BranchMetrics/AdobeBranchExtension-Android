@@ -41,8 +41,8 @@ dependencies {
     javadocDeps 'io.branch.sdk.android:library:4.1.2'
 
     // Adobe
-    implementation 'com.adobe.marketing.mobile:mobileservices:1.+'
-    implementation 'com.adobe.marketing.mobile:analytics:1.+'
+//    implementation 'com.adobe.marketing.mobile:mobileservices:1.+'
+//    implementation 'com.adobe.marketing.mobile:analytics:1.+'
     implementation 'com.adobe.marketing.mobile:userprofile:1.+'
     implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
 }

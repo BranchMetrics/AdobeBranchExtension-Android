@@ -34,7 +34,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
 
     private List<AdobeBranch.EventTypeSource> apiWhitelist;
-    private boolean adobeIdHasBeenSet = false;
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
@@ -81,7 +80,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         if (isBranchConfigurationEvent(event)) {
             handleBranchConfigurationEvent(event);
-        } else if (isIdentityEvent(event) && !adobeIdHasBeenSet) {
+        } else if (isIdentityEvent(event)) {
             handleIdentityEvent(event);
         } else if (isTrackedEvent(event)) {
             handleEvent(event);
@@ -167,7 +166,6 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                         break;
                 }
             }
-            adobeIdHasBeenSet = true;
         } else {
             PrefHelper.Debug("Warning: identitySharedState is null");
         }

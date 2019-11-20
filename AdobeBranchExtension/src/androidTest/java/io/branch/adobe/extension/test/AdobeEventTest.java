@@ -1,6 +1,6 @@
 package io.branch.adobe.extension.test;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.util.Log;
 
 import com.adobe.marketing.mobile.AdobeCallback;

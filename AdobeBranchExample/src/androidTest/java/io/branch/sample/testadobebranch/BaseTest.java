@@ -1,8 +1,9 @@
 package io.branch.sample.testadobebranch;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
+
+import androidx.test.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +23,7 @@ public class BaseTest {
 
     @Before
     public void setUp() {
-        mContext = InstrumentationRegistry.getTargetContext();
+        mContext = InstrumentationRegistry.getContext();
     }
 
     @After
@@ -31,8 +32,8 @@ public class BaseTest {
     }
 
     @Test
-    public void testContext() {
-        assertEquals("io.branch.adobe.demo", mContext.getPackageName());
+    public void testPackageName() {
+        assertEquals("io.branch.adobe.demo.test", mContext.getPackageName());
     }
 
     Context getTestContext() {

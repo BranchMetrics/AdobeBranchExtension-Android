@@ -8,6 +8,8 @@ import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +26,14 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     private static final String ADOBE_TRACK_EVENT = "com.adobe.eventtype.generic.track";
     private static final String ADOBE_EVENT_SOURCE = "com.adobe.eventsource.requestcontent";
 
+    private static final String ADOBE_IDENTITY_EVENT = "com.adobe.module.identity";
+    public static final String ADOBE_IDENTITY_EVENT_TYPE = "com.adobe.eventtype.identity";
+    public static final String ADOBE_IDENTITY_EVENT_SOURCE = "com.adobe.eventsource.responseidentity";
+
     static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventtype.configuration";
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
 
     private List<AdobeBranch.EventTypeSource> apiWhitelist;
-
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
@@ -57,6 +62,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         // Register default Event Listeners
         registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
         registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
+        registerExtension(ADOBE_IDENTITY_EVENT_TYPE, ADOBE_IDENTITY_EVENT_SOURCE);
     }
 
     private void registerExtension(String eventType, String eventSource) {
@@ -74,6 +80,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         if (isBranchConfigurationEvent(event)) {
             handleBranchConfigurationEvent(event);
+        } else if (isIdentityEvent(event)) {
+            handleIdentityEvent(event);
         } else if (isTrackedEvent(event)) {
             handleEvent(event);
         } else {
@@ -97,6 +105,10 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     private boolean isBranchConfigurationEvent(final Event event) {
         return (event.getType().equals(BRANCH_CONFIGURATION_EVENT) && event.getSource().equals(BRANCH_EVENT_SOURCE));
+    }
+
+    private boolean isIdentityEvent(final Event event) {
+        return (event.getType().equals(ADOBE_IDENTITY_EVENT_TYPE) && event.getSource().equals(ADOBE_IDENTITY_EVENT_SOURCE));
     }
 
     /**
@@ -129,6 +141,33 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             } else if (object == null) {
                 apiWhitelist = null;
             }
+        }
+    }
+
+    /**
+     * Handle the Identity event by passing the Adobe ID to Branch
+     * @param event Adobe Event
+     */
+    private void handleIdentityEvent(final Event event) {
+        Map<String, Object> identitySharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EVENT, event, this);
+        Branch branch = Branch.getInstance();
+        if (branch != null && identitySharedState != null) {
+            PrefHelper.Debug(String.format("The identitySharedState is: %s", new JSONObject(identitySharedState)));
+            for (Map.Entry<String, Object> entry :identitySharedState.entrySet()) {
+                switch (entry.getKey()) {
+                    case "mid":
+                        branch.setRequestMetadata("$marketing_cloud_visitor_id", entry.getValue().toString());
+                        break;
+                    case "vid":
+                        branch.setRequestMetadata("$analytics_visitor_id", entry.getValue().toString());
+                        break;
+                    case "aid":
+                        branch.setRequestMetadata("$adobe_visitor_id", entry.getValue().toString());
+                        break;
+                }
+            }
+        } else {
+            PrefHelper.Debug("Warning: identitySharedState is null");
         }
     }
 
@@ -231,7 +270,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             case AdobeBranch.KEY_TAX:
                 Double tax = asDouble(value);
                 if (tax != null) {
-                    event.setShipping(tax);
+                    event.setTax(tax);
                     return true;
                 }
                 break;
@@ -275,19 +314,4 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         return context;
     }
-
-      // Debug Code
-//    private void enumerateMap(String tag, Event event) {
-//        Map<String, Object> eventData = event.getEventData();
-//        if (eventData == null) {
-//            return;
-//        }
-//
-//        Log.d(TAG, "===" + tag + "====================");
-//        for (Map.Entry<String, Object> pair : eventData.entrySet()) {
-//            Log.d(TAG, "Key: " + pair.getKey() + "\t" + pair.getValue().toString());
-//        }
-//        Log.d(TAG, "===" + tag + "====================");
-//    }
-
 }

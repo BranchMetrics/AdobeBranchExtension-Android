@@ -3,9 +3,9 @@ package io.branch.adobe.extension;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.MobileCore;
 
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.branch.referral.Branch;
+import io.branch.referral.BranchUtil;
 
 /**
  * AdobeBranch Extension.
@@ -40,6 +41,8 @@ public class AdobeBranch {
      * @return An initialized {@link Branch} object
      */
     public static Branch getAutoInstance(@NonNull Context context) {
+        BranchUtil.setPluginType(BranchUtil.PluginType.AdobeLaunch);
+        BranchUtil.setPluginVersion(BuildConfig.VERSION_NAME);
         return Branch.getAutoInstance(context);
     }
 

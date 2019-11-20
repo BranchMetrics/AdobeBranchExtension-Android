@@ -39,8 +39,8 @@ dependencies {
     javadocDeps 'io.branch.sdk.android:library:4.1.2'
 
     // Adobe
-    implementation 'com.adobe.marketing.mobile:userprofile:1.+'
-    implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
+    implementation 'com.adobe.marketing.mobile:userprofile:1.0.1'
+    implementation 'com.adobe.marketing.mobile:sdk-core:1.4.6'
 }
 
 //------------- Javadocs ---------------//

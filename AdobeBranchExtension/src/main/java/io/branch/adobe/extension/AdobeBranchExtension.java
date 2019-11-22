@@ -1,6 +1,7 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
@@ -11,6 +12,7 @@ import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,9 +28,12 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     private static final String ADOBE_TRACK_EVENT = "com.adobe.eventtype.generic.track";
     private static final String ADOBE_EVENT_SOURCE = "com.adobe.eventsource.requestcontent";
 
-    private static final String ADOBE_IDENTITY_EVENT = "com.adobe.module.identity";
-    public static final String ADOBE_IDENTITY_EVENT_TYPE = "com.adobe.eventtype.identity";
-    public static final String ADOBE_IDENTITY_EVENT_SOURCE = "com.adobe.eventsource.responseidentity";
+    private static final String ADOBE_IDENTITY_EXTENSION = "com.adobe.module.identity";
+    private static final String ADOBE_ANALYTICS_EXTENSION = "com.adobe.module.analytics";
+
+    private static final String ADOBE_HUB_EVENT_TYPE = "com.adobe.eventtype.hub";
+    private static final String ADOBE_SHARED_STATE_EVENT_SOURCE = "com.adobe.eventsource.sharedstate";
+    private static final String ADOBE_SHARED_STATE_EVENT_OWNER_KEY = "stateowner";
 
     static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventtype.configuration";
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
@@ -62,7 +67,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         // Register default Event Listeners
         registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
         registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
-        registerExtension(ADOBE_IDENTITY_EVENT_TYPE, ADOBE_IDENTITY_EVENT_SOURCE);
+        registerExtension(ADOBE_HUB_EVENT_TYPE, ADOBE_SHARED_STATE_EVENT_SOURCE);
     }
 
     private void registerExtension(String eventType, String eventSource) {
@@ -80,8 +85,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
         if (isBranchConfigurationEvent(event)) {
             handleBranchConfigurationEvent(event);
-        } else if (isIdentityEvent(event)) {
-            handleIdentityEvent(event);
+        } else if (isSharedStateEvent(event)) {
+            handleSharedStateEvent(event);
         } else if (isTrackedEvent(event)) {
             handleEvent(event);
         } else {
@@ -107,8 +112,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return (event.getType().equals(BRANCH_CONFIGURATION_EVENT) && event.getSource().equals(BRANCH_EVENT_SOURCE));
     }
 
-    private boolean isIdentityEvent(final Event event) {
-        return (event.getType().equals(ADOBE_IDENTITY_EVENT_TYPE) && event.getSource().equals(ADOBE_IDENTITY_EVENT_SOURCE));
+    private boolean isSharedStateEvent(final Event event) {
+        return (event.getType().equals(ADOBE_HUB_EVENT_TYPE) && event.getSource().equals(ADOBE_SHARED_STATE_EVENT_SOURCE));
     }
 
     /**
@@ -145,29 +150,43 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     }
 
     /**
-     * Handle the Identity event by passing the Adobe ID to Branch
+     * Handle "shared state change" events by checking if the owner of a given event is one of the
+     * extensions that keeps track of Adobe IDs (e.g. Identity/Analytics). If so, get the shared state of
+     * that extension and retrieve the Adobe IDs if they are present, then pass the IDs to Branch.
+     * https://aep-sdks.gitbook.io/docs/resources/building-mobile-extensions/requesting-a-shared-state
      * @param event Adobe Event
      */
-    private void handleIdentityEvent(final Event event) {
-        Map<String, Object> identitySharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EVENT, event, this);
-        Branch branch = Branch.getInstance();
-        if (branch != null && identitySharedState != null) {
-            PrefHelper.Debug(String.format("The identitySharedState is: %s", new JSONObject(identitySharedState)));
-            for (Map.Entry<String, Object> entry :identitySharedState.entrySet()) {
+    private void handleSharedStateEvent(final Event event) {
+        final Branch branch = Branch.getInstance();
+        if (branch != null && event != null && event.getEventData() != null) {
+            Map<String, Object> extensionSharedState = new HashMap<>();
+            Object stateowner = event.getEventData().get(ADOBE_SHARED_STATE_EVENT_OWNER_KEY);
+            if (ADOBE_ANALYTICS_EXTENSION.equals(stateowner)) {
+                extensionSharedState = getApi().getSharedEventState(ADOBE_ANALYTICS_EXTENSION, event, this);
+                PrefHelper.Debug(String.format("analytics extension shared state = %s", new JSONObject(extensionSharedState)));
+            } else if (ADOBE_IDENTITY_EXTENSION.equals(stateowner)) {
+                extensionSharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EXTENSION, event, this);
+                PrefHelper.Debug(String.format("identity extension shared state = %s", new JSONObject(extensionSharedState)));
+            }
+            for (Map.Entry<String, Object> entry :extensionSharedState.entrySet()) {
+                String value = (String) entry.getValue();
+                if (TextUtils.isEmpty(value)) continue;
+                // pass
                 switch (entry.getKey()) {
                     case "mid":
-                        branch.setRequestMetadata("$marketing_cloud_visitor_id", entry.getValue().toString());
+                        // pass Adobe Experience Cloud ID (https://app.gitbook.com/@aep-sdks/s/docs/using-mobile-extensions/mobile-core/identity/identity-api-reference#getExperienceCloudIdTitle)
+                        branch.setRequestMetadata("$marketing_cloud_visitor_id", value);
                         break;
                     case "vid":
-                        branch.setRequestMetadata("$analytics_visitor_id", entry.getValue().toString());
+                        // pass Adobe Custom Visitor ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#getvisitoridentifier)
+                        branch.setRequestMetadata("$analytics_visitor_id", value);
                         break;
                     case "aid":
-                        branch.setRequestMetadata("$adobe_visitor_id", entry.getValue().toString());
+                        // pass Adobe Tracking ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#gettrackingidentifier)
+                        branch.setRequestMetadata("$adobe_visitor_id", value);
                         break;
                 }
             }
-        } else {
-            PrefHelper.Debug("Warning: identitySharedState is null");
         }
     }
 

@@ -29,6 +29,7 @@ public class DemoApplication extends Application {
         initBranch();
         initAdobeBranch();
         registerAdobeBranchExtension();
+//        Analytics.setVisitorIdentifier("custom_identifier_123"); // to test custom visitor ID (key: "vid")
     }
 
     private void initBranch() {

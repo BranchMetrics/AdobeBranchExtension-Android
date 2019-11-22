@@ -34,7 +34,6 @@ import io.branch.referral.util.LinkProperties;
 import io.branch.referral.util.ShareSheetStyle;
 
 public class ProductActivity extends AppCompatActivity {
-    private static final String TAG = "Branch::ProductActivity";
     private List<SwagModel> swagModelList;
 
     @Override
@@ -93,8 +92,7 @@ public class ProductActivity extends AppCompatActivity {
         AdobeBranch.initSession(new Branch.BranchReferralInitListener() {
             @Override
             public void onInitFinished(JSONObject referringParams, BranchError error) {
-                PrefHelper.Debug("JSON: " + referringParams.toString());
-
+                if (referringParams == null) return;
                 try {
                     // You would think that there was an easier way to figure this out than looking at LinkProperties code
                     if (referringParams.has("+clicked_branch_link") && referringParams.getBoolean("+clicked_branch_link")) {

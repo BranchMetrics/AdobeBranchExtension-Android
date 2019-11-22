@@ -29,7 +29,7 @@ configurations {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test:runner:1.2.0'
@@ -37,7 +37,7 @@ dependencies {
 
     // Branch
     api 'io.branch.sdk.android:library:4.2.0'
-    javadocDeps 'io.branch.sdk.android:library:4.2.0'
+//    javadocDeps 'io.branch.sdk.android:library:4.2.0'
 
     // Adobe
     androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.0.1'

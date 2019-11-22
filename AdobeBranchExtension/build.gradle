@@ -38,6 +38,7 @@ dependencies {
     javadocDeps 'io.branch.sdk.android:library:4.2.0'
 
     // Adobe
+    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.0.1'
     implementation 'com.adobe.marketing.mobile:sdk-core:1.4.6'
 }
 

@@ -157,7 +157,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
      * @param event Adobe Event
      */
     private void handleSharedStateEvent(final Event event) {
-        final Branch branch = Branch.getInstance();
+        Branch branch = Branch.getInstance();
         if (branch != null && event != null && event.getEventData() != null) {
             Map<String, Object> extensionSharedState = new HashMap<>();
             Object stateowner = event.getEventData().get(ADOBE_SHARED_STATE_EVENT_OWNER_KEY);
@@ -169,21 +169,24 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 PrefHelper.Debug(String.format("identity extension shared state = %s", new JSONObject(extensionSharedState)));
             }
             for (Map.Entry<String, Object> entry :extensionSharedState.entrySet()) {
-                String value = (String) entry.getValue();
-                if (TextUtils.isEmpty(value)) continue;
-                // pass
+
+                Object value = entry.getValue();
+                if (value == null) continue;
+                String valueAsString = value.toString();
+                if (TextUtils.isEmpty(valueAsString)) continue;
+
                 switch (entry.getKey()) {
                     case "mid":
                         // pass Adobe Experience Cloud ID (https://app.gitbook.com/@aep-sdks/s/docs/using-mobile-extensions/mobile-core/identity/identity-api-reference#getExperienceCloudIdTitle)
-                        branch.setRequestMetadata("$marketing_cloud_visitor_id", value);
+                        branch.setRequestMetadata("$marketing_cloud_visitor_id", valueAsString);
                         break;
                     case "vid":
                         // pass Adobe Custom Visitor ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#getvisitoridentifier)
-                        branch.setRequestMetadata("$analytics_visitor_id", value);
+                        branch.setRequestMetadata("$analytics_visitor_id", valueAsString);
                         break;
                     case "aid":
                         // pass Adobe Tracking ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#gettrackingidentifier)
-                        branch.setRequestMetadata("$adobe_visitor_id", value);
+                        branch.setRequestMetadata("$adobe_visitor_id", valueAsString);
                         break;
                 }
             }

@@ -1,6 +1,7 @@
 package io.branch.adobe.extension;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
@@ -168,21 +169,21 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 PrefHelper.Debug(String.format("identity extension shared state = %s", new JSONObject(extensionSharedState)));
             }
             for (Map.Entry<String, Object> entry :extensionSharedState.entrySet()) {
-                Object value = entry.getValue();
-                if (value == null || value.toString().length() == 0 || "null".equalsIgnoreCase(value.toString())) continue;
+                String value = (String) entry.getValue();
+                if (TextUtils.isEmpty(value)) continue;
                 // pass
                 switch (entry.getKey()) {
                     case "mid":
                         // pass Adobe Experience Cloud ID (https://app.gitbook.com/@aep-sdks/s/docs/using-mobile-extensions/mobile-core/identity/identity-api-reference#getExperienceCloudIdTitle)
-                        branch.setRequestMetadata("$marketing_cloud_visitor_id", entry.getValue().toString());
+                        branch.setRequestMetadata("$marketing_cloud_visitor_id", value);
                         break;
                     case "vid":
                         // pass Adobe Custom Visitor ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#getvisitoridentifier)
-                        branch.setRequestMetadata("$analytics_visitor_id", entry.getValue().toString());
+                        branch.setRequestMetadata("$analytics_visitor_id", value);
                         break;
                     case "aid":
                         // pass Adobe Tracking ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#gettrackingidentifier)
-                        branch.setRequestMetadata("$adobe_visitor_id", entry.getValue().toString());
+                        branch.setRequestMetadata("$adobe_visitor_id", value);
                         break;
                 }
             }

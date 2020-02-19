@@ -3,6 +3,7 @@ package io.branch.adobe.extension;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -33,6 +34,7 @@ public class AdobeBranch {
 
     // Package Private Configuration Event
     static final String KEY_APICONFIGURATION = "branch_api_configuration";
+    static final int INIT_SESSION_DELAY_MILLIS = 750;
 
     /**
      * Singleton method to return the pre-initialized, or newly initialize and return, a singleton
@@ -47,19 +49,47 @@ public class AdobeBranch {
     }
 
     /**
-     * <p>Initializes a session with the Branch API.
+     * <p>Initializes Branch session after the default 750 millisecond delay needed to collect Adobe IDs.
+     * To initialize without delay, use initSession(callback, data, activity, delay) passing in 0 as the delay parameter.
+     *
      * @param callback A listener that will be called following successful (or unsuccessful)
      *                 initialization of the session with the Branch API.
      * @param data     A {@link  Uri} variable containing the details of the source link that
      *                 led to this initialization action.
      * @param activity The calling {@link Activity} for context.
-     * @return A {@link Boolean} value that will return <i>false</i> if the supplied <i>data</i>
-     * parameter cannot be handled successfully - i.e. is not of a valid URI format.
+     * @return         A {@link Boolean} value that will return <i>false</i> if the supplied <i>data</i>
+     *                 parameter cannot be handled successfully - i.e. is not of a valid URI format.
      */
     public static boolean initSession(Branch.BranchReferralInitListener callback, Uri data, Activity activity) {
-        Branch branch = Branch.getInstance();
+        return initSession(callback, data, activity, INIT_SESSION_DELAY_MILLIS);
+    }
+
+    /**
+     * <p>Initializes Branch session after the chosen delay in milliseconds (needed to collect Adobe IDs).
+     * To initialize without delay pass 0 as the delay parameter.
+     *
+     * @param callback A listener that will be called following successful (or unsuccessful)
+     *                 initialization of the session with the Branch API.
+     * @param data     A {@link  Uri} variable containing the details of the source link that
+     *                 led to this initialization action.
+     * @param activity The calling {@link Activity} for context.
+     * @param delay    An {@link Integer} to set session initialization delay in millis (delay is needed to collect Adobe IDs).
+     * @return         A {@link Boolean} value that will return <i>false</i> if the supplied <i>data</i>
+     *                 parameter cannot be handled successfully - i.e. is not of a valid URI format.
+     */
+    public static boolean initSession(final Branch.BranchReferralInitListener callback, final Uri data, final Activity activity, int delay) {
+        final Branch branch = Branch.getInstance();
         if (branch != null) {
-            return branch.initSession(callback, data, activity);
+            if (delay == 0) {
+                branch.initSession(callback, data, activity);
+            } else {
+                new Handler().postDelayed(new Runnable() {
+                    @Override public void run() {
+                        branch.initSession(callback, data, activity);
+                    }
+                }, delay);
+            }
+            return true;
         }
         return false;
     }

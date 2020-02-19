@@ -3,17 +3,21 @@ package io.branch.adobe.extension;
 import android.content.Context;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
+import com.adobe.marketing.mobile.MobileCore;
 
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import io.branch.referral.Branch;
@@ -42,41 +46,59 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
-
         initExtension();
     }
 
-    @Override
-    protected String getName() {
+    public static void registerExtension(@NonNull Context context) {
+        registerExtension(context, false);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static void registerExtension(@NonNull Context context, boolean debugMode) {
+        if (debugMode) {
+            Branch.enableDebugMode();
+        }
+        AdobeBranch.getAutoInstance(context.getApplicationContext());
+        boolean successfulRegistration = MobileCore.registerExtension(AdobeBranchExtension.class, new ExtensionErrorCallback<ExtensionError>() {
+            @Override public void error(final ExtensionError extensionError) {
+                PrefHelper.Debug(String.format(Locale.getDefault(),
+                        "An error occurred while registering the AdobeBranchExtension %d %s",
+                        extensionError.getErrorCode(), extensionError.getErrorName()));
+            }
+        });
+        if (!successfulRegistration) {
+            PrefHelper.Debug("Failed to register the AdobeBranchExtension extension");
+        }
+    }
+
+    @Override protected String getName() {
         return "io.branch";
     }
 
-    @Override
-    public final String getVersion() {
+    @Override public final String getVersion() {
         return BuildConfig.VERSION_NAME;
     }
 
-    @Override
-    public void error(ExtensionError extensionError) {
-        // something went wrong...
-        // TODO: What to do about it.
-        PrefHelper.Debug(TAG + String.format("An error occurred in the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+    @Override public void error(ExtensionError extensionError) {
+        // error callback when registering event listeners
+        PrefHelper.Debug(TAG + String.format(Locale.getDefault(),
+                "An error occurred in the AdobeBranchExtension %d %s",
+                extensionError.getErrorCode(), extensionError.getErrorName()));
     }
 
     private void initExtension() {
         // Register default Event Listeners
-        registerExtension(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE);
-        registerExtension(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE);
-        registerExtension(ADOBE_HUB_EVENT_TYPE, ADOBE_SHARED_STATE_EVENT_SOURCE);
+        ExtensionApi api = getApi();
+        if (api != null) {
+            api.registerEventListener(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE, AdobeBranchExtensionListener.class, this);
+            api.registerEventListener(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE, AdobeBranchExtensionListener.class, this);
+            api.registerEventListener(ADOBE_HUB_EVENT_TYPE, ADOBE_SHARED_STATE_EVENT_SOURCE, AdobeBranchExtensionListener.class, this);
+        }
     }
 
-    private void registerExtension(String eventType, String eventSource) {
-        getApi().registerEventListener(eventType, eventSource, AdobeBranchExtensionListener.class, this);
-    }
-
-    // Package Private
     void handleAdobeEvent(final Event event) {
-        PrefHelper.Debug(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]", event.getName(), event.getType(), event.getSource()));
+        PrefHelper.Debug(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]",
+                event.getName(), event.getType(), event.getSource()));
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
@@ -128,15 +150,16 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             PrefHelper.Debug("Configuring AdobeBranch");
 
             Object object = eventData.get(AdobeBranch.KEY_APICONFIGURATION);
+            ExtensionApi api = getApi();
 
             // We expect this to be a List of Strings.
-            if (object instanceof List<?>) {
+            if (object instanceof List<?> && api != null) {
                 try {
                     apiWhitelist = (List<AdobeBranch.EventTypeSource>)object;
 
                     // For each pair in the whitelist, register the extension
                     for (AdobeBranch.EventTypeSource pair : apiWhitelist) {
-                        registerExtension(pair.getType(), pair.getSource());
+                        api.registerEventListener(pair.getType(), pair.getSource(), AdobeBranchExtensionListener.class, this);
                     }
 
                 } catch (Exception e) {

@@ -4,8 +4,6 @@ import android.app.Application;
 import android.util.Log;
 
 import com.adobe.marketing.mobile.AdobeCallback;
-import com.adobe.marketing.mobile.ExtensionError;
-import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.Identity;
 import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
@@ -16,7 +14,6 @@ import com.adobe.marketing.mobile.UserProfile;
 
 import io.branch.adobe.extension.AdobeBranch;
 import io.branch.adobe.extension.AdobeBranchExtension;
-import io.branch.referral.*;
 
 public class TestApplication extends Application {
     private static final String TAG = "Branch::TestApplication::";
@@ -27,13 +24,7 @@ public class TestApplication extends Application {
         super.onCreate();
 
         // Initialize
-        initBranch();
         initAdobeBranch();
-        registerAdobeBranchExtension();
-    }
-
-    private void initBranch() {
-        Branch.enableDebugMode();
     }
 
     private void initAdobeBranch() {
@@ -45,6 +36,7 @@ public class TestApplication extends Application {
         MobileCore.setLogLevel(LoggingMode.VERBOSE);
 
         try {
+            AdobeBranchExtension.registerExtension(this, true);
             UserProfile.registerExtension();
             Identity.registerExtension();
             Lifecycle.registerExtension();
@@ -59,20 +51,4 @@ public class TestApplication extends Application {
             Log.e(TAG, "InitException", e);
         }
     }
-
-    private void registerAdobeBranchExtension() {
-        MobileCore.setApplication(this);
-
-        ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
-            @Override
-            public void error(final ExtensionError extensionError) {
-                Log.e(TAG, String.format("An error occurred while registering the AdobeBranchExtension %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
-            }
-        };
-
-        if (!MobileCore.registerExtension(AdobeBranchExtension.class, errorCallback)) {
-            Log.e(TAG, "Failed to register the AdobeBranchExtension extension");
-        }
-    }
-
 }

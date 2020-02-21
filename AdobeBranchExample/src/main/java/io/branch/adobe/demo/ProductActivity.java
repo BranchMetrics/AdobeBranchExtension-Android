@@ -2,7 +2,7 @@ package io.branch.adobe.demo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -57,13 +57,14 @@ public class ProductActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        initBranchSession();
+        AdobeBranch.initSession(branchInitSessionCallback, getIntent().getData(), this);
     }
 
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         this.setIntent(intent);
+        AdobeBranch.initSession(branchInitSessionCallback, getIntent().getData(), this, 0);
     }
 
     private void initList() {
@@ -88,16 +89,16 @@ public class ProductActivity extends AppCompatActivity {
         }
     }
 
-    private void initBranchSession() {
-        AdobeBranch.initSession(new Branch.BranchReferralInitListener() {
+    private Branch.BranchReferralInitListener branchInitSessionCallback = new Branch.BranchReferralInitListener() {
             @Override
             public void onInitFinished(JSONObject referringParams, BranchError error) {
+                PrefHelper.Debug("initBranchSession, referringParams = " + referringParams + ", error = " + error);
                 if (referringParams == null) return;
                 try {
                     // You would think that there was an easier way to figure this out than looking at LinkProperties code
                     if (referringParams.has("+clicked_branch_link") && referringParams.getBoolean("+clicked_branch_link")) {
                         String idString = referringParams.optString(SwagActivity.SWAG_ID);
-                        if (idString != null) {
+                        if (!TextUtils.isEmpty(idString)) {
                             int swagId = Integer.parseInt(idString);
 
                             // Launch the Swag Activity
@@ -111,8 +112,8 @@ public class ProductActivity extends AppCompatActivity {
                     // internal error; id is not a number.
                 }
             }
-        }, getIntent().getData(), this);
-    }
+        };
+
 
     private void shareProduct() {
         BranchUniversalObject buo = new BranchUniversalObject();

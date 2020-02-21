@@ -16,6 +16,7 @@ import java.util.Map;
 
 import io.branch.referral.Branch;
 import io.branch.referral.BranchUtil;
+import io.branch.referral.Defines;
 
 /**
  * AdobeBranch Extension.
@@ -89,6 +90,21 @@ public class AdobeBranch {
                     }
                 }, delay);
             }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * ReInitialize session. Called from onNewIntent, will only reInitialize if the intent contains a boolean extra "branch_force_new_session"=true
+     */
+    public static boolean reInitSession(@NonNull Activity activity, Branch.BranchReferralInitListener callback) {
+        Branch branch = Branch.getInstance();
+        if (branch != null && branch.reInitSession(activity, callback)) {
+            // this ensures that if user intra-app links from SomeActivity to LauncherActivity,
+            // and both, initSession and reInitSession, are used in LauncherActivity, then only the
+            // reInitSession callback returns referring params while the other one returns error, "SDK already initialized".
+            activity.getIntent().removeExtra(Defines.Jsonkey.ForceNewBranchSession.getKey());
             return true;
         }
         return false;

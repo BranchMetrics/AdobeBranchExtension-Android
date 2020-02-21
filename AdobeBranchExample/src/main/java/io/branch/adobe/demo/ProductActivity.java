@@ -64,7 +64,7 @@ public class ProductActivity extends AppCompatActivity {
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         this.setIntent(intent);
-        AdobeBranch.initSession(branchInitSessionCallback, getIntent().getData(), this, 0);
+        AdobeBranch.reInitSession(this, branchInitSessionCallback);
     }
 
     private void initList() {

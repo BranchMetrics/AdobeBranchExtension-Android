@@ -43,8 +43,6 @@ public class AdobeBranch {
      * @return An initialized {@link Branch} object
      */
     public static Branch getAutoInstance(@NonNull Context context) {
-        BranchUtil.setPluginType(BranchUtil.PluginType.AdobeLaunch);
-        BranchUtil.setPluginVersion(BuildConfig.VERSION_NAME);
         return Branch.getAutoInstance(context);
     }
 
@@ -80,11 +78,13 @@ public class AdobeBranch {
     public static boolean initSession(final Branch.BranchReferralInitListener callback, final Uri data, final Activity activity, int delay) {
         final Branch branch = Branch.getInstance();
         if (branch != null) {
+            BranchUtil.setPluginType(BranchUtil.PluginType.AdobeLaunch);// prevents early auto-initialization
             if (delay == 0) {
                 branch.initSession(callback, data, activity);
             } else {
                 new Handler().postDelayed(new Runnable() {
                     @Override public void run() {
+                        BranchUtil.setPluginType(null);// re-enables auto-initialization for when app is launched from recent apps list
                         branch.initSession(callback, data, activity);
                     }
                 }, delay);

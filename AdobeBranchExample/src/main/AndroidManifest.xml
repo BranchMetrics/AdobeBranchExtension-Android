@@ -16,6 +16,7 @@
         <activity
             android:name=".ProductActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,9 +26,7 @@
 
             <!-- Branch URI Scheme -->
             <intent-filter>
-                <data
-                    android:host="open"
-                    android:scheme="adobe-branch" />
+                <data android:scheme="adobe-branch" />
 
                 <action android:name="android.intent.action.VIEW" />
 

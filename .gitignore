@@ -9,3 +9,6 @@
 gradle/
 gradlew
 gradlew.bat
+
+AdobeBranchExample/.idea
+AdobeBranchExample/local.properties

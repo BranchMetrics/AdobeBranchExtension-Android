@@ -3,6 +3,7 @@ package io.branch.adobe.extension;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Pair;
 
@@ -16,7 +17,11 @@ import java.util.Map;
 
 import io.branch.referral.Branch;
 import io.branch.referral.BranchUtil;
+import io.branch.referral.BuildConfig;
 import io.branch.referral.Defines;
+import io.branch.referral.PrefHelper;
+
+import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 /**
  * AdobeBranch Extension.
@@ -35,7 +40,7 @@ public class AdobeBranch {
 
     // Package Private Configuration Event
     static final String KEY_APICONFIGURATION = "branch_api_configuration";
-    static final int INIT_SESSION_DELAY_MILLIS = 750;
+    static final int INIT_SESSION_DELAY_MILLIS = 1000;
 
     /**
      * Singleton method to return the pre-initialized, or newly initialize and return, a singleton
@@ -77,37 +82,16 @@ public class AdobeBranch {
      *                 parameter cannot be handled successfully - i.e. is not of a valid URI format.
      */
     public static boolean initSession(final Branch.BranchReferralInitListener callback, final Uri data, final Activity activity, int delay) {
-        final Branch branch = Branch.getInstance();
-        if (branch != null) {
-            BranchUtil.setPluginType(BranchUtil.PluginType.AdobeLaunch);// prevents early auto-initialization
-            if (delay == 0) {
-                branch.initSession(callback, data, activity);
-            } else {
-                new Handler().postDelayed(new Runnable() {
-                    @Override public void run() {
-                        BranchUtil.setPluginType(null);// re-enables auto-initialization for when app is launched from recent apps list
-                        branch.initSession(callback, data, activity);
-                    }
-                }, delay);
-            }
-            return true;
-        }
-        return false;
+        Branch.sessionBuilder(activity).withCallback(callback).withData(data).withDelay(delay).init();
+        return true;
     }
 
     /**
      * ReInitialize session. Called from onNewIntent, will only reInitialize if the intent contains a boolean extra "branch_force_new_session"=true
      */
     public static boolean reInitSession(@NonNull Activity activity, Branch.BranchReferralInitListener callback) {
-        Branch branch = Branch.getInstance();
-        if (branch != null && branch.reInitSession(activity, callback)) {
-            // this ensures that if user intra-app links from SomeActivity to LauncherActivity,
-            // and both, initSession and reInitSession, are used in LauncherActivity, then only the
-            // reInitSession callback returns referring params while the other one returns error, "SDK already initialized".
-            activity.getIntent().removeExtra(Defines.Jsonkey.ForceNewBranchSession.getKey());
-            return true;
-        }
-        return false;
+        Branch.sessionBuilder(activity).withCallback(callback).reInit();
+        return true;
     }
 
     /**

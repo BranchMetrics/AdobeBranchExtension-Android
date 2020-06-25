@@ -11,11 +11,6 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.adobe.marketing.mobile.AdobeCallback;
-import com.adobe.marketing.mobile.Analytics;
-import com.adobe.marketing.mobile.Identity;
-import com.adobe.marketing.mobile.MobileCore;
-import com.adobe.marketing.mobile.VisitorID;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;

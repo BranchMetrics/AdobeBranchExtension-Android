@@ -3,8 +3,6 @@ package io.branch.adobe.extension;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Handler;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -16,12 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.branch.referral.Branch;
-import io.branch.referral.BranchUtil;
-import io.branch.referral.BuildConfig;
-import io.branch.referral.Defines;
-import io.branch.referral.PrefHelper;
 
-import static android.preference.PreferenceManager.getDefaultSharedPreferences;
+import static io.branch.adobe.extension.AdobeBranchExtension.PASSED_ADOBE_IDS_TO_BRANCH;
 
 /**
  * AdobeBranch Extension.
@@ -65,7 +59,7 @@ public class AdobeBranch {
      *                 parameter cannot be handled successfully - i.e. is not of a valid URI format.
      */
     public static boolean initSession(Branch.BranchReferralInitListener callback, Uri data, Activity activity) {
-        return initSession(callback, data, activity, INIT_SESSION_DELAY_MILLIS);
+        return initSessionInternal(callback, data, activity);
     }
 
     /**
@@ -83,6 +77,12 @@ public class AdobeBranch {
      */
     public static boolean initSession(final Branch.BranchReferralInitListener callback, final Uri data, final Activity activity, int delay) {
         Branch.sessionBuilder(activity).withCallback(callback).withData(data).withDelay(delay).init();
+        return true;
+    }
+
+    static boolean initSessionInternal(final Branch.BranchReferralInitListener callback, final Uri data, final Activity activity) {
+        Branch.sessionBuilder(activity).withCallback(callback).withData(data).withDelay(
+                PASSED_ADOBE_IDS_TO_BRANCH.get() ? 0 : INIT_SESSION_DELAY_MILLIS).init();
         return true;
     }
 

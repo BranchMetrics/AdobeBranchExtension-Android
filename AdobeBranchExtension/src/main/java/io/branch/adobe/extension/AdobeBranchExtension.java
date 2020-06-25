@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.branch.referral.Branch;
 import io.branch.referral.PrefHelper;
@@ -45,6 +46,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     static final String IDENTITY_ID = "mid";
     static final String ANALYTICS_VISITOR_ID = "vid";
     static final String ANALYTICS_TRACKING_ID = "aid";
+    static AtomicBoolean PASSED_ADOBE_IDS_TO_BRANCH = new AtomicBoolean(false);
 
     private List<AdobeBranch.EventTypeSource> apiWhitelist;
 
@@ -219,6 +221,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 }
                 if (IDENTITY_ID.equals(key) || ANALYTICS_VISITOR_ID.equals(key) || ANALYTICS_TRACKING_ID.equals(key)) {
                     // we received at least one, non-empty adobe id
+                    PASSED_ADOBE_IDS_TO_BRANCH.set(true);
                     Branch.getInstance().removeSessionInitializationDelay();
                 }
             }

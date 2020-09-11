@@ -104,7 +104,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     void handleAdobeEvent(final Event event) {
         PrefHelper.Debug(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]",
-                event.getName(), event.getType(), event.getSource()));
+                branchEventNameFromAdobeEvent(event), event.getType(), event.getSource()));
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
@@ -118,7 +118,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         } else if (isTrackedEvent(event)) {
             handleEvent(event);
         } else {
-            PrefHelper.Debug(TAG + "Event Dropped: " + event.getName());
+            PrefHelper.Debug(TAG + "Event Dropped: " + branchEventNameFromAdobeEvent(event));
         }
     }
 
@@ -250,19 +250,20 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         BranchEvent branchEvent = null;
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
+
+            // get Branch event name
+            String name = branchEventNameFromAdobeEvent(event);
+
             try {
-                // Try to make a Standard Event if possible.
-                BRANCH_STANDARD_EVENT eventType = BRANCH_STANDARD_EVENT.valueOf(event.getName());
+                // Try to make a Standard Branch Event if possible
+                BRANCH_STANDARD_EVENT eventType = BRANCH_STANDARD_EVENT.valueOf(name);
                 branchEvent = new BranchEvent(eventType);
             } catch (IllegalArgumentException e) {
-                //This is expected if we are unable to create a Standard Event
+                //This is expected if we are unable to create a Standard Event, default to Custom Event
+                branchEvent = new BranchEvent(name);
             }
 
-            if (branchEvent == null) {
-                // This is considered a "Custom" event.
-                branchEvent = new BranchEvent(event.getName());
-            }
-
+            // Map Adobe's event data to Branch event properties
             for (Map.Entry<String, Object> pair : eventData.entrySet()) {
                 String key = pair.getKey();
                 Object obj = pair.getValue();
@@ -273,6 +274,19 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             }
         }
         return branchEvent;
+    }
+
+    public static String branchEventNameFromAdobeEvent(Event event) {
+        String name = event.getName();
+        Map<String, Object> eventData = event.getEventData();
+        if (eventData == null) return name;
+
+        if (eventData.containsKey("state")) {
+            name = eventData.get("state").toString();
+        } else if (eventData.containsKey("action")) {
+            name = eventData.get("action").toString();
+        }
+        return name;
     }
 
     /**

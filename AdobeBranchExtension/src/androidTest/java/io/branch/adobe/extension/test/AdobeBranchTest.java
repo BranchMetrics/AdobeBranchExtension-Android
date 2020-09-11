@@ -24,7 +24,7 @@ public class AdobeBranchTest {
 
     @Before
     public void setUp() {
-        Branch.enableDebugMode();
+        Branch.enableLogging();
         mContext = InstrumentationRegistry.getContext();
     }
 

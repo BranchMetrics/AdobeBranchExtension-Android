@@ -42,10 +42,10 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="adobe-branch.app.link"
+                    android:host="bl7v1.app.link"
                     android:scheme="https" />
                 <data
-                    android:host="adobe-branch-alternate.app.link"
+                    android:host="bl7v1-alternate.app.link"
                     android:scheme="https" />
             </intent-filter>
         </activity>
@@ -57,7 +57,7 @@
         <!-- Branch init -->
         <meta-data
             android:name="io.branch.sdk.BranchKey"
-            android:value="key_live_nbB0KZ4UGOKaHEWCjQI2ThncEAeRJmhy" />
+            android:value="key_live_dhNKlG7lVcfcDbrLi0p20hdjrEhvJKHz" />
 
     </application>
 

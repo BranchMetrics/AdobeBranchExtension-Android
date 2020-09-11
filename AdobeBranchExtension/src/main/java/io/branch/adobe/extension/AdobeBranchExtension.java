@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.branch.referral.Branch;
 import io.branch.referral.PrefHelper;
@@ -42,6 +43,11 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventtype.configuration";
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configurecontent";
 
+    static final String IDENTITY_ID = "mid";
+    static final String ANALYTICS_VISITOR_ID = "vid";
+    static final String ANALYTICS_TRACKING_ID = "aid";
+    static AtomicBoolean PASSED_ADOBE_IDS_TO_BRANCH = new AtomicBoolean(false);
+
     private List<AdobeBranch.EventTypeSource> apiWhitelist;
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
@@ -56,7 +62,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     @SuppressWarnings("WeakerAccess")
     public static void registerExtension(@NonNull Context context, boolean debugMode) {
         if (debugMode) {
-            Branch.enableDebugMode();
+            Branch.enableLogging();
         }
         AdobeBranch.getAutoInstance(context.getApplicationContext());
         boolean successfulRegistration = MobileCore.registerExtension(AdobeBranchExtension.class, new ExtensionErrorCallback<ExtensionError>() {
@@ -174,8 +180,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
 
     /**
      * Handle "shared state change" events by checking if the owner of a given event is one of the
-     * extensions that keeps track of Adobe IDs (e.g. Identity/Analytics). If so, get the shared state of
-     * that extension and retrieve the Adobe IDs if they are present, then pass the IDs to Branch.
+     * extensions that keeps track of Adobe IDs (e.g. from Identity/Analytics extensions). If so, get
+     * the shared state of that extension and retrieve the Adobe IDs if they are present, then pass the IDs to Branch.
      * https://aep-sdks.gitbook.io/docs/resources/building-mobile-extensions/requesting-a-shared-state
      * @param event Adobe Event
      */
@@ -186,31 +192,37 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             Object stateowner = event.getEventData().get(ADOBE_SHARED_STATE_EVENT_OWNER_KEY);
             if (ADOBE_ANALYTICS_EXTENSION.equals(stateowner)) {
                 extensionSharedState = getApi().getSharedEventState(ADOBE_ANALYTICS_EXTENSION, event, this);
-                PrefHelper.Debug(String.format("analytics extension shared state = %s", new JSONObject(extensionSharedState)));
             } else if (ADOBE_IDENTITY_EXTENSION.equals(stateowner)) {
                 extensionSharedState = getApi().getSharedEventState(ADOBE_IDENTITY_EXTENSION, event, this);
-                PrefHelper.Debug(String.format("identity extension shared state = %s", new JSONObject(extensionSharedState)));
             }
             for (Map.Entry<String, Object> entry :extensionSharedState.entrySet()) {
+                PrefHelper.Debug(String.format("identity extension shared state = %s", new JSONObject(extensionSharedState)));
 
                 Object value = entry.getValue();
                 if (value == null) continue;
                 String valueAsString = value.toString();
                 if (TextUtils.isEmpty(valueAsString)) continue;
 
-                switch (entry.getKey()) {
-                    case "mid":
+                final String key = entry.getKey();
+                switch (key) {
+                    case IDENTITY_ID:
                         // pass Adobe Experience Cloud ID (https://app.gitbook.com/@aep-sdks/s/docs/using-mobile-extensions/mobile-core/identity/identity-api-reference#getExperienceCloudIdTitle)
                         branch.setRequestMetadata("$marketing_cloud_visitor_id", valueAsString);
                         break;
-                    case "vid":
+                    case ANALYTICS_VISITOR_ID:
                         // pass Adobe Custom Visitor ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#getvisitoridentifier)
                         branch.setRequestMetadata("$analytics_visitor_id", valueAsString);
                         break;
-                    case "aid":
+                    case ANALYTICS_TRACKING_ID:
                         // pass Adobe Tracking ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#gettrackingidentifier)
+                        // if MARKETING_CLOUD_VISITOR_ID is set this will always be null unless the Adobe Launch client set a grace period to support both IDs (https://docs.adobe.com/content/help/en/id-service/using/implementation/setup-analytics.html#:~:text=Grace%20periods%20can%20run%20for,a%20grace%20period%20if%20required.&text=You%20need%20a%20grace%20period,the%20same%20Analytics%20report%20suite.)
                         branch.setRequestMetadata("$adobe_visitor_id", valueAsString);
                         break;
+                }
+                if (IDENTITY_ID.equals(key) || ANALYTICS_VISITOR_ID.equals(key) || ANALYTICS_TRACKING_ID.equals(key)) {
+                    // we received at least one, non-empty adobe id
+                    PASSED_ADOBE_IDS_TO_BRANCH.set(true);
+                    Branch.getInstance().removeSessionInitializationDelay();
                 }
             }
         }

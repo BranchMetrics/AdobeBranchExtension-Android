@@ -30,6 +30,7 @@ dependencies {
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // Branch
@@ -41,8 +42,9 @@ dependencies {
     //implementation 'com.huawei.hms:ads-identifier:3.4.28.305'
 
     // Adobe
-    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.1.0'
-    implementation 'com.adobe.marketing.mobile:sdk-core:1.5.4'
+    androidTestImplementation 'com.adobe.marketing.mobile:analytics:1.+'
+    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.+'
+    implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
 }
 
 //------------- Javadocs ---------------//

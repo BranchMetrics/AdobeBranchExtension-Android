@@ -8,6 +8,7 @@
 
     <application
         android:name=".TestApplication" >
+        <activity android:name=".MockActivity" />
 
         <!-- The Branch Key for testing.  Do not use these keys for production applications. -->
         <meta-data

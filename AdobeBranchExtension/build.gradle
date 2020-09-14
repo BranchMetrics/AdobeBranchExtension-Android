@@ -44,7 +44,7 @@ dependencies {
     // Adobe
     androidTestImplementation 'com.adobe.marketing.mobile:analytics:1.+'
     androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.+'
-    implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
+    implementation 'com.adobe.marketing.mobile:sdk-core:1.5.7'
 }
 
 //------------- Javadocs ---------------//

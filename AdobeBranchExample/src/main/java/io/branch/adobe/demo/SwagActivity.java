@@ -9,7 +9,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.MobileCore;
@@ -138,31 +137,26 @@ public class SwagActivity extends AppCompatActivity implements View.OnClickListe
     private void doPurchase(View view) {
         Long timestamp = System.currentTimeMillis()/1000;
 
-        Map<String, Object> eventData = new HashMap<>();
+        Map<String, String> eventData = new HashMap<>();
         eventData.put(AdobeBranch.KEY_AFFILIATION, "Branch Metrics Company Store");
         eventData.put(AdobeBranch.KEY_COUPON, "SATURDAY NIGHT SPECIAL");
         eventData.put(AdobeBranch.KEY_CURRENCY, "USD");
         eventData.put(AdobeBranch.KEY_DESCRIPTION, mSwagModel.getDescription());
-        eventData.put(AdobeBranch.KEY_REVENUE, mSwagModel.getPrice());
-        eventData.put(AdobeBranch.KEY_SHIPPING, 0.99);
-        eventData.put(AdobeBranch.KEY_TAX, (mSwagModel.getPrice() * 0.077));
+        eventData.put(AdobeBranch.KEY_REVENUE, String.valueOf(mSwagModel.getPrice()));
+        eventData.put(AdobeBranch.KEY_SHIPPING, "0.99");
+        eventData.put(AdobeBranch.KEY_TAX, String.valueOf(mSwagModel.getPrice() * 0.077));
         eventData.put(AdobeBranch.KEY_TRANSACTION_ID, UUID.randomUUID().toString());
 
         eventData.put("category", "Arts & Entertainment");
-        eventData.put("product_id", mSwagModel.getId());
+        eventData.put("product_id", String.valueOf(mSwagModel.getId()));
         eventData.put("sku", "sku-be-doo");
         eventData.put("timestamp", timestamp.toString());
 
         eventData.put("custom1", "Custom Data 1");
         eventData.put("custom2", "Custom Data 2");
 
-        Event newEvent = new Event.Builder("PURCHASE",
-                "com.adobe.eventType.generic.track",
-                "com.adobe.eventSource.requestContent")
-                .setEventData(eventData).build();
-
         // dispatch the analytics event
-        MobileCore.dispatchEvent(newEvent, this);
+        MobileCore.trackAction("PURCHASE", eventData);
 
         showSnackbar(view, "Thank you for your purchase of " + mSwagModel.getTitle() + "!");
     }
@@ -173,20 +167,12 @@ public class SwagActivity extends AppCompatActivity implements View.OnClickListe
     private void doAddToCart(View view) {
         Long timestamp = System.currentTimeMillis()/1000;
 
-        Map<String, Object> eventData = new HashMap<>();
+        Map<String, String> eventData = new HashMap<>();
         eventData.put(AdobeBranch.KEY_DESCRIPTION, mSwagModel.getDescription());
-        eventData.put(AdobeBranch.KEY_REVENUE, mSwagModel.getPrice());
-
-        eventData.put("product_id", mSwagModel.getId());
+        eventData.put(AdobeBranch.KEY_REVENUE, String.valueOf(mSwagModel.getPrice()));
+        eventData.put("product_id", String.valueOf(mSwagModel.getId()));
         eventData.put("timestamp", timestamp.toString());
-
-        Event newEvent = new Event.Builder("ADD_TO_CART",
-                "com.adobe.eventType.generic.track",
-                "com.adobe.eventSource.requestContent")
-                .setEventData(eventData).build();
-
-        // dispatch the analytics event
-        MobileCore.dispatchEvent(newEvent, this);
+        MobileCore.trackState("ADD_TO_CART", eventData);
 
         showSnackbar(view, mSwagModel.getTitle() + " added to your shopping cart");
     }

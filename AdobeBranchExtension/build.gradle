@@ -30,19 +30,21 @@ dependencies {
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // Branch
-    api 'io.branch.sdk.android:library:5.0.1'
-    javadocDeps 'io.branch.sdk.android:library:5.0.1'
+    api 'io.branch.sdk.android:library:5.0.3'
+    javadocDeps 'io.branch.sdk.android:library:5.0.3'
     implementation ('com.google.android.gms:play-services-ads-identifier:17.0.0')
     // for Huawei devices without GMS, adding it requires bumping up min api level to 19 though, so we
     // leave it up to the client to add it following Branch documentation here: https://help.branch.io/developers-hub/docs/android-basic-integration
     //implementation 'com.huawei.hms:ads-identifier:3.4.28.305'
 
     // Adobe
-    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.1.0'
-    implementation 'com.adobe.marketing.mobile:sdk-core:1.5.4'
+    androidTestImplementation 'com.adobe.marketing.mobile:analytics:1.+'
+    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:1.+'
+    implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
 }
 
 //------------- Javadocs ---------------//

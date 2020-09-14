@@ -1,4 +1,9 @@
 # Adobe Branch SDK Extension change log
+- v1.3.0
+  * _*Master Release*_ - September 14, 2020
+  * Pick up Adobe IDs more intelligently
+  * Treat Adobe state and action names as Branch event names, instead of lumping them under one name, "Analytics Track".
+
 - v1.2.1
   * _*Master Release*_ - February 21, 2020
   * Fix session initialization from recent apps list

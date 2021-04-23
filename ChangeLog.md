@@ -1,4 +1,9 @@
 # Adobe Branch SDK Extension change log
+- v1.3.1
+  * April 23, 2021
+  * Update Branch Android SDK to 5.0.7
+  * Add api to filter events by name
+
 - v1.3.0
   * _*Master Release*_ - September 14, 2020
   * Pick up Adobe IDs more intelligently

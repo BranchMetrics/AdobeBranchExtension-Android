@@ -304,10 +304,10 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         Map<String, Object> eventData = event.getEventData();
         if (eventData == null) return name;
 
-        if (eventData.containsKey("state")) {
-            name = eventData.get("state").toString();
-        } else if (eventData.containsKey("action")) {
+        if (eventData.containsKey("action")) {
             name = eventData.get("action").toString();
+        } else if (eventData.containsKey("state")) {
+            name = eventData.get("state").toString();
         }
         return name;
     }

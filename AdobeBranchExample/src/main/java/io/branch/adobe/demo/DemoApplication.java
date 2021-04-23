@@ -11,6 +11,9 @@ import com.adobe.marketing.mobile.Signal;
 import com.adobe.marketing.mobile.UserProfile;
 
 import android.app.Application;
+
+import java.util.Arrays;
+
 import io.branch.adobe.extension.AdobeBranchExtension;
 import io.branch.referral.*;
 
@@ -38,6 +41,15 @@ public class DemoApplication extends Application {
             Identity.registerExtension();
             Lifecycle.registerExtension();
             Signal.registerExtension();
+
+            // NOTE! following code will enable you to configure exclusion list or allow list, but you can't define both!
+            // If you don't configure any, all events will send to Branch which is not ideal!
+            // Define the allow list of the events names
+//            AdobeBranchExtension.configureEventAllowList(Arrays.asList("VIEW"));
+
+            // Define the exclusion list of the events names
+            AdobeBranchExtension.configureEventExclusionList(Arrays.asList("VIEW"));
+
             AdobeBranchExtension.registerExtension(this, true);
             MobileCore.start(new AdobeCallback () {
                 @Override public void call(Object o) {

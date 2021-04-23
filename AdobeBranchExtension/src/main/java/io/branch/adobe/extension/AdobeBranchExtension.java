@@ -15,6 +15,7 @@ import com.adobe.marketing.mobile.MobileCore;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,11 +49,30 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     static final String ANALYTICS_TRACKING_ID = "aid";
     static AtomicBoolean PASSED_ADOBE_IDS_TO_BRANCH = new AtomicBoolean(false);
 
+    static List<String> allowList = new ArrayList<>();
+    static List<String> exclusionList = new ArrayList<>();
+
     private List<AdobeBranch.EventTypeSource> apiWhitelist;
 
     public AdobeBranchExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
         initExtension();
+    }
+
+    public static void configureEventAllowList(List<String> eventNames) {
+        if (!eventNames.isEmpty() && !exclusionList.isEmpty()) {
+            throw new IllegalArgumentException("Already configured exclusionList for AdobeBranchExtension");
+        }
+
+        allowList = eventNames;
+    }
+
+    public static void configureEventExclusionList(List<String> eventNames) {
+        if (!eventNames.isEmpty() && !allowList.isEmpty()) {
+            throw new IllegalArgumentException("Already configured allowList for AdobeBranchExtension");
+        }
+
+        exclusionList = eventNames;
     }
 
     public static void registerExtension(@NonNull Context context) {
@@ -234,6 +254,9 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
      * @param event Adobe Event
      */
     private void handleEvent(final Event event) {
+        String name = branchEventNameFromAdobeEvent(event);
+        if (!isValidEventForBranch(name)) return;
+
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
             try {
@@ -287,6 +310,18 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
             name = eventData.get("action").toString();
         }
         return name;
+    }
+
+    private boolean isValidEventForBranch(String eventName) {
+        if (allowList.isEmpty() && exclusionList.isEmpty()) {
+            return true;
+        } else if (!allowList.isEmpty() && allowList.contains(eventName)) {
+            return true;
+        } else if (!exclusionList.isEmpty() && !exclusionList.contains(eventName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

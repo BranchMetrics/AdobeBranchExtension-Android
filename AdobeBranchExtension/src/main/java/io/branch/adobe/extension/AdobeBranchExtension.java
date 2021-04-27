@@ -101,8 +101,15 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         return "io.branch";
     }
 
+    @Override
+    protected void onUnregistered() {
+        super.onUnregistered();
+    }
+
     @Override public final String getVersion() {
-        return BuildConfig.VERSION_NAME;
+        //return BuildConfig.VERSION_NAME;
+        // TODO: figure out why this isn't being picked up properly
+        return "1.3.1";
     }
 
     @Override public void error(ExtensionError extensionError) {

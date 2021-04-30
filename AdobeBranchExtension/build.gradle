@@ -35,7 +35,7 @@ dependencies {
 
     // Branch
     api 'io.branch.sdk.android:library:5.0.7'
-    javadocDeps 'io.branch.sdk.android:library:5.0.7'
+    javadocDeps 'io.branch.sdk.android:library:5.0.8'
     implementation ('com.google.android.gms:play-services-ads-identifier:17.0.0')
     // for Huawei devices without GMS, adding it requires bumping up min api level to 19 though, so we
     // leave it up to the client to add it following Branch documentation here: https://help.branch.io/developers-hub/docs/android-basic-integration

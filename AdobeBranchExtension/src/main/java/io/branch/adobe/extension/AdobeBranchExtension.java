@@ -109,7 +109,7 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
     @Override public final String getVersion() {
         //return BuildConfig.VERSION_NAME;
         // TODO: figure out why this isn't being picked up properly
-        return "1.3.1";
+        return "1.3.2";
     }
 
     @Override public void error(ExtensionError extensionError) {

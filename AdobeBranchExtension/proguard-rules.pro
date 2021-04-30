@@ -4,3 +4,6 @@
 # for Huawei devices without GMS (Branch looks up oaid via refelection)
 #-keep class com.huawei.hms.ads.** { *; }
 #-keep interface com.huawei.hms.ads.** { *; }
+
+-keep class io.branch.adobe.extension.** { *; }
+-keep interface io.branch.adobe.extension.** { *; }

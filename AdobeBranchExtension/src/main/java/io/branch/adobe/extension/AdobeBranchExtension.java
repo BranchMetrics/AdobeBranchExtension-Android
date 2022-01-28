@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.branch.referral.Branch;
+import io.branch.referral.BranchPluginSupport;
 import io.branch.referral.PrefHelper;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
@@ -270,6 +271,8 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
                 PrefHelper.Debug(TAG + "Track BranchEvent: " + branchEvent.getEventName());
 
                 branchEvent.logEvent(getAdobeContext());
+
+                deviceDataSharedState(event);
             } catch(Exception e) {
                 PrefHelper.LogAlways(TAG + "handleTrackEvent Exception" + e.getMessage());
             }
@@ -426,5 +429,20 @@ public class AdobeBranchExtension extends Extension implements ExtensionErrorCal
         }
 
         return context;
+    }
+
+    private void deviceDataSharedState(Event event) {
+        ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
+            @Override
+            public void error(final ExtensionError extensionError) {
+                PrefHelper.LogAlways(String.format("An error occurred while retrieving the shared state for configuration %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+            }
+        };
+
+        ExtensionApi api = getApi();
+        if (api != null) {
+            Map<String, Object> deviceData = BranchPluginSupport.getInstance().deviceDescription();
+            api.setSharedEventState(deviceData, event, errorCallback);
+        }
     }
 }

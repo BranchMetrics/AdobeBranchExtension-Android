@@ -1,4 +1,10 @@
 # Adobe Branch SDK Extension change log
+
+- v1.3.3
+  * February 10, 2022
+  * Update Branch Android SDK to 5.1.0
+  * Added api to add device data to shared state of tracked events.
+
 - v1.3.2
   * April 29, 2021
   * Update Branch Android SDK to 5.0.8

@@ -43,7 +43,7 @@ public class AdobeBranch {
      * @return An initialized {@link Branch} object
      */
     public static Branch getAutoInstance(@NonNull Context context) {
-        Branch.registerPlugin("AdobeBranchExtension-Android", BuildConfig.VERSION_NAME);
+        Branch.registerPlugin("AdobeBranchExtension", BuildConfig.VERSION_NAME);
         return Branch.getAutoInstance(context);
     }
 

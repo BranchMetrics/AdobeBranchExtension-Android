@@ -1,24 +1,29 @@
 ## Reference
-<INSERT LINKS TO OTHER PR(S)/REFERENCES HERE (IF NONE REMOVE THIS SECTION)>
+SDK-XXXX -- <TITLE>.
 
-## Description
-<INSERT HIGH LEVEL DESCRIPTION OF CHANGES AND WHY THEY WERE MADE>
+## Summary
+<!-- Simple summary of what was changed. -->
+
+## Motivation
+<!-- Why are you making this change? If it's for fixing a bug, if possible, please include a code snippet or example project that demonstrates the issue. -->
+
+## Type Of Change
+<!-- Please delete options that are not relevant -->
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] This change requires a documentation update
 
 ## Testing Instructions
-<INSERT TESTING INSTRUCTIONS HERE>
+<!-- Testing instructions, example code snippets, etc -->
 
-## Risk Assessment [`HIGH | MEDIUM | LOW`]
-<PICK ONE.  WHAT IS THE POTENTIAL NEGATIVE IMPACT FOR CUSTOMERS AND US? SELECT ONE OF THE LEVELS. IF HIGH/MEDIUM EXPLAIN.>
 
-- [ ] I, the PR creator, have tested — integration, unit, or otherwise — this code.
+<!-- Checklist -->
+<!-- My code follows the style guidelines of this project -->
+<!-- I have performed a self-review of my code -->
+<!-- I have commented my code, particularly in hard-to-understand areas -->
+<!-- I have made corresponding changes to the documentation -->
+<!-- I have added tests that prove my fix is effective or that my feature works -->
+<!-- New and existing unit tests pass locally with my changes -->
 
-## Reviewer Checklist (To be checked off by the reviewer only)
-
-**You can only merge once all of these are checked off!**
-
-- [ ] JIRA Ticket is referenced in MR title
-- Correctness & Style
-    - [ ] Conforms to [Style Guides](https://source.android.com/setup/contribute/code-style)
-    - [ ] Mission critical pieces are documented in code and out of code as needed
-- [ ] Unit Tests reviewed and test issue sufficiently
-- [ ] Functionality was reviewed in QA independently by another engineer on the team (clone for each required reviewer)
+cc @BranchMetrics/saas-sdk-devs for visibility.

@@ -1,6 +1,6 @@
 # Adobe Branch SDK Extension change log
 
-- v1.3.6
+- v1.4.0
   * January 12, 2023
   * Update Branch Android SDK to 5.2.7
 

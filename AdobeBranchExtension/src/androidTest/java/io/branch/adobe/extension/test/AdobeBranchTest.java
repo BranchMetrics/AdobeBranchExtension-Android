@@ -8,6 +8,7 @@ import androidx.test.rule.ActivityTestRule;
 
 import com.adobe.marketing.mobile.AdobeCallback;
 import com.adobe.marketing.mobile.Analytics;
+import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.Identity;
 import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
@@ -24,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.branch.adobe.extension.AdobeBranchExtension;
 import io.branch.referral.Branch;
@@ -55,24 +58,22 @@ public class AdobeBranchTest {
     private void initAdobeBranch() {
         PrefHelper.Debug("AdobeBranchTest.initAdobeBranch()");
 
+        AdobeBranch.getAutoInstance(this);
+
         MobileCore.setApplication(app);
+        MobileCore.configureWithAppID(ADOBE_APP_ID);
         MobileCore.setLogLevel(LoggingMode.DEBUG);
 
-        try {
-            Analytics.registerExtension();
-            UserProfile.registerExtension();
-            Identity.registerExtension();
-            Lifecycle.registerExtension();
-            Signal.registerExtension();
-            AdobeBranchExtension.registerExtension(app, true);
-            MobileCore.start(new AdobeCallback() {
-                @Override public void call(Object o) {
-                    MobileCore.configureWithAppID(ADOBE_APP_ID);
-                }
-            });
-        } catch (InvalidInitException e) {
-            PrefHelper.Debug("AdobeBranchTest.InvalidInitException: " + e.getLocalizedMessage());
-        }
+        List<Class<? extends Extension>> extensions = new ArrayList<>();
+        extensions.add(UserProfile.EXTENSION);
+        extensions.add(Analytics.EXTENSION);
+        extensions.add(Identity.EXTENSION);
+        extensions.add(Lifecycle.EXTENSION);
+        extensions.add(Signal.EXTENSION);
+        extensions.add(AdobeBranchExtension.EXTENSION);
+        MobileCore.registerExtensions(extensions, o -> {
+            //Log.d(LOG_TAG, "AEP Mobile SDK is initialized");
+        });
     }
 
     @After

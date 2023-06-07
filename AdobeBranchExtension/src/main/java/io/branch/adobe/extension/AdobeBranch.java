@@ -36,6 +36,8 @@ public class AdobeBranch {
     static final String KEY_APICONFIGURATION = "branch_api_configuration";
     static final int INIT_SESSION_DELAY_MILLIS = 1000;
 
+    private Context applicationContext;
+
     /**
      * Singleton method to return the pre-initialized, or newly initialize and return, a singleton
      * object of the type {@link Branch}.
@@ -114,8 +116,11 @@ public class AdobeBranch {
                 .setEventData(eventData).build();
 
         // dispatch the analytics event
-        return MobileCore.dispatchEvent(newEvent, null);
+        //return MobileCore.dispatchEvent(newEvent, null);
+        MobileCore.dispatchEvent(newEvent);
+        return true;
     }
+
 
     /**
      * Pair for holding an Event Type and Event Source.

@@ -116,7 +116,6 @@ public class AdobeBranch {
                 .setEventData(eventData).build();
 
         // dispatch the analytics event
-        //return MobileCore.dispatchEvent(newEvent, null);
         MobileCore.dispatchEvent(newEvent);
         return true;
     }

@@ -36,8 +36,6 @@ public class AdobeBranch {
     static final String KEY_APICONFIGURATION = "branch_api_configuration";
     static final int INIT_SESSION_DELAY_MILLIS = 1000;
 
-    private Context applicationContext;
-
     /**
      * Singleton method to return the pre-initialized, or newly initialize and return, a singleton
      * object of the type {@link Branch}.

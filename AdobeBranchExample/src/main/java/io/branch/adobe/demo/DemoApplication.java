@@ -39,7 +39,7 @@ public class DemoApplication extends Application {
 
         MobileCore.setApplication(this);
         MobileCore.configureWithAppID(ADOBE_APP_ID);
-        MobileCore.setLogLevel(LoggingMode.DEBUG);
+        MobileCore.setLogLevel(LoggingMode.ERROR);
 
         // NOTE! following code will enable you to configure exclusion list or allow list, but you can't define both!
         // If you don't configure any, all events will send to Branch which is not ideal!

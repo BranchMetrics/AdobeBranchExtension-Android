@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.adobe.marketing.mobile.Event;
-import com.adobe.marketing.mobile.EventSource;
-import com.adobe.marketing.mobile.EventType;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.MobileCore;
@@ -85,7 +83,9 @@ public class AdobeBranchExtension extends Extension {
     }
 
     private void registerListeners() {
-        getApi().registerEventListener(EventType.WILDCARD, EventSource.WILDCARD, this::handleAdobeEvent);
+        getApi().registerEventListener(ADOBE_TRACK_EVENT, ADOBE_EVENT_SOURCE, this::handleAdobeEvent);
+        getApi().registerEventListener(BRANCH_CONFIGURATION_EVENT, BRANCH_EVENT_SOURCE, this::handleAdobeEvent);
+        getApi().registerEventListener(ADOBE_HUB_EVENT_TYPE, ADOBE_SHARED_STATE_EVENT_SOURCE, this::handleAdobeEvent);
     }
 
     @Override
@@ -159,12 +159,17 @@ public class AdobeBranchExtension extends Extension {
             PrefHelper.Debug("Configuring AdobeBranch");
 
             Object object = eventData.get(AdobeBranch.KEY_APICONFIGURATION);
-            ExtensionApi api = getApi();
 
             // We expect this to be a List of Strings.
-            if (object instanceof List<?> && api != null) {
+            if (object instanceof List<?>) {
                 try {
                     apiWhitelist = (List<AdobeBranch.EventTypeSource>) object;
+
+                    // For each pair in the whitelist, register the extension
+                    for (AdobeBranch.EventTypeSource pair : apiWhitelist) {
+                        getApi().registerEventListener(pair.getType(), pair.getSource(), this::handleEvent);
+                    }
+
                 } catch (Exception e) {
                     // Internal Error.
                     PrefHelper.LogAlways(TAG + "handleBranchConfigurationEvent Exception" + e.getMessage());
@@ -394,11 +399,8 @@ public class AdobeBranchExtension extends Extension {
     }
 
     private void deviceDataSharedState(Event event) {
-        ExtensionApi api = getApi();
-        if (api != null) {
             Map<String, Object> deviceData = BranchPluginSupport.getInstance().deviceDescription();
-            api.createSharedState(deviceData, event);
-        }
+            getApi().createSharedState(deviceData, event);
     }
 
     public static void configureEventAllowList(List<String> eventNames) {

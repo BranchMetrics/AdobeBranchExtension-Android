@@ -15,8 +15,8 @@ import com.adobe.marketing.mobile.UserProfile;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.branch.adobe.extension.AdobeBranch;
 import io.branch.adobe.extension.AdobeBranchExtension;
+import io.branch.referral.PrefHelper;
 
 public class TestApplication extends Application {
     private static final String TAG = "Branch::TestApplication::";
@@ -33,8 +33,6 @@ public class TestApplication extends Application {
     private void initAdobeBranch() {
         Log.d(TAG, "initAdobeBranch()");
 
-        AdobeBranch.getAutoInstance(this);
-
         MobileCore.setApplication(this);
         MobileCore.configureWithAppID(ADOBE_APP_ID);
         MobileCore.setLogLevel(LoggingMode.DEBUG);
@@ -47,7 +45,7 @@ public class TestApplication extends Application {
         extensions.add(Signal.EXTENSION);
         extensions.add(AdobeBranchExtension.EXTENSION);
         MobileCore.registerExtensions(extensions, o -> {
-            //Log.d(LOG_TAG, "AEP Mobile SDK is initialized");
+            PrefHelper.Debug("AEP Mobile SDK is initialized");
         });
     }
 }

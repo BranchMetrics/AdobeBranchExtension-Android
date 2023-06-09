@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+
+import com.adobe.marketing.mobile.AdobeCallbackWithError;
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.MobileCore;
 
@@ -101,9 +103,9 @@ public class AdobeBranch {
      *                         If empty, this extension will not listen for any events.
      *                         If null, this extension will default to listen for all Adobe events.
      *                         If non-empty, will listen for only those events that are in the list.
-     * @return true if the configuration was successful
+     * @param callback AdobeCallbackWithError that will handle the success or failure of the operation.
      */
-    public static boolean registerAdobeBranchEvents(List<EventTypeSource> additionalEvents) {
+    public static void registerAdobeBranchEvents(List<EventTypeSource> additionalEvents, AdobeCallbackWithError<Event> callback) {
         Map<String, Object> eventData = new HashMap<>();
 
         eventData.put(AdobeBranch.KEY_APICONFIGURATION, additionalEvents);
@@ -113,11 +115,8 @@ public class AdobeBranch {
                 AdobeBranchExtension.BRANCH_EVENT_SOURCE)
                 .setEventData(eventData).build();
 
-        // dispatch the analytics event
-        MobileCore.dispatchEvent(newEvent);
-        return true;
+        MobileCore.dispatchEventWithResponseCallback(newEvent, 5000, callback);
     }
-
 
     /**
      * Pair for holding an Event Type and Event Source.

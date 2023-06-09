@@ -5,7 +5,6 @@ import android.app.Application;
 import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.Identity;
-import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
 import com.adobe.marketing.mobile.LoggingMode;
 import com.adobe.marketing.mobile.MobileCore;
@@ -13,7 +12,6 @@ import com.adobe.marketing.mobile.Signal;
 import com.adobe.marketing.mobile.UserProfile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.branch.adobe.extension.AdobeBranchExtension;

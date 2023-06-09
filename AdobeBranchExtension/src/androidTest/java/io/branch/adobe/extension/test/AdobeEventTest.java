@@ -2,9 +2,9 @@ package io.branch.adobe.extension.test;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.adobe.marketing.mobile.AdobeCallbackWithError;
+import com.adobe.marketing.mobile.AdobeError;
 import com.adobe.marketing.mobile.Event;
-import com.adobe.marketing.mobile.ExtensionError;
-import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.MobileCore;
 
 import org.junit.Assert;
@@ -69,55 +69,95 @@ public class AdobeEventTest extends AdobeBranchTest {
         for (Map.Entry<String, String> entry : whitelistConfigurations.entrySet()) {
             apiWhitelist.add(new AdobeBranch.EventTypeSource(entry.getKey(), entry.getValue()));
         }
-        Assert.assertTrue(AdobeBranch.registerAdobeBranchEvents(apiWhitelist));
-        Thread.sleep(500);
 
-        // test sending this Adobe event of custom type and source, as either custom or standard Branch event depending on that Adobe events name.
-        for (Map.Entry<String, String> entry : whitelistConfigurations.entrySet()) {
-            sendCustomEventOfCustomTypeAndSource(entry.getKey(), entry.getValue(), true);
-            sendStandardEventOfCustomTypeAndSource(entry.getKey(), entry.getValue(), true);
-        }
-        // normal adobe events should fail
-        testTrackStandardActionWithExpectation(false);
-        testTrackCustomActionWithExpectation(false);
-        testTrackStandardStateWithExpectation(false);
-        testTrackCustomStateWithExpectation(false);
+        AdobeBranch.registerAdobeBranchEvents(apiWhitelist, new AdobeCallbackWithError<Event>() {
+            @Override
+            public void fail(AdobeError adobeError) {
+                Assert.fail();
+            }
+
+            @Override
+            public void call(Event event) {
+                Assert.assertNotNull(event);
+
+                // test sending this Adobe event of custom type and source, as either custom or standard Branch event depending on that Adobe events name.
+                for (Map.Entry<String, String> entry : whitelistConfigurations.entrySet()) {
+                    sendCustomEventOfCustomTypeAndSource(entry.getKey(), entry.getValue(), true);
+                    sendStandardEventOfCustomTypeAndSource(entry.getKey(), entry.getValue(), true);
+                }
+
+                // normal adobe events should fail
+                try {
+                    testTrackStandardActionWithExpectation(false);
+                    testTrackCustomActionWithExpectation(false);
+                    testTrackStandardStateWithExpectation(false);
+                    testTrackCustomStateWithExpectation(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Test
     public void testEmptyWhitelist() throws InterruptedException, IllegalAccessException, NoSuchFieldException, InstantiationException {
         // register empty whitelist
-        Assert.assertTrue(AdobeBranch.registerAdobeBranchEvents(new ArrayList<AdobeBranch.EventTypeSource>()));
-        Thread.sleep(500);
+        AdobeBranch.registerAdobeBranchEvents(new ArrayList<AdobeBranch.EventTypeSource>(), new AdobeCallbackWithError<Event>() {
+            @Override
+            public void fail(AdobeError adobeError) {
+                Assert.fail();
+            }
 
-        // test sending Adobe event of custom type and source, should fail
-        sendStandardEventOfCustomTypeAndSource("io.branch.eventType.generic.track1", "io.branch.eventSource.requestContent1", false);
-        // test sending normal Adobe events, should fail
-        testTrackStandardActionWithExpectation(false);
-        testTrackCustomActionWithExpectation(false);
-        testTrackStandardStateWithExpectation(false);
-        testTrackCustomStateWithExpectation(false);
+            @Override
+            public void call(Event event) {
+                Assert.assertNotNull(event);
+
+                // test sending Adobe event of custom type and source, should fail
+                sendStandardEventOfCustomTypeAndSource("io.branch.eventType.generic.track1", "io.branch.eventSource.requestContent1", false);
+
+                try {
+                    // test sending normal Adobe events, should fail
+                    testTrackStandardActionWithExpectation(false);
+                    testTrackCustomActionWithExpectation(false);
+                    testTrackStandardStateWithExpectation(false);
+                    testTrackCustomStateWithExpectation(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Test
     public void testNullWhitelist() throws InterruptedException, IllegalAccessException, NoSuchFieldException, InstantiationException {
         // register empty whitelist
-        Assert.assertTrue(AdobeBranch.registerAdobeBranchEvents(null));
-        Thread.sleep(1000);
 
-        // test sending Adobe event of custom type and source, should fail
-        sendStandardEventOfCustomTypeAndSource("io.branch.eventType.generic.track1", "io.branch.eventSource.requestContent1", false);
-        // test sending normal Adobe events, should succeed
-        testTrackStandardActionWithExpectation(true);
-        testTrackCustomActionWithExpectation(true);
-        testTrackStandardStateWithExpectation(true);
-        testTrackCustomStateWithExpectation(true);
+
+        AdobeBranch.registerAdobeBranchEvents(null, new AdobeCallbackWithError<Event>() {
+            @Override
+            public void fail(AdobeError adobeError) {
+                Assert.fail();
+            }
+
+            @Override
+            public void call(Event event) {
+                Assert.assertNotNull(event);
+
+                // test sending Adobe event of custom type and source, should fail
+                sendStandardEventOfCustomTypeAndSource("io.branch.eventType.generic.track1", "io.branch.eventSource.requestContent1", false);
+
+                try {
+                    // test sending normal Adobe events, should succeed
+                    testTrackStandardActionWithExpectation(true);
+                    testTrackCustomActionWithExpectation(true);
+                    testTrackStandardStateWithExpectation(true);
+                    testTrackCustomStateWithExpectation(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
-
-
-
-
-
 
     // UTILITIES
 
@@ -136,39 +176,36 @@ public class AdobeEventTest extends AdobeBranchTest {
     protected void sendEvent(final Event event, final boolean branchIsExpectedToRegisterEvent) {
         PrefHelper.Debug("sendEvent (START) -- " + event.getName());
 
-        Assert.assertTrue(MobileCore.dispatchEvent(event,
-                new ExtensionErrorCallback<ExtensionError>() {
-                    @Override
-                    public void error(ExtensionError extensionError) {
+        MobileCore.dispatchEventWithResponseCallback(event, 5000, new AdobeCallbackWithError<Event>() {
+            @Override
+            public void fail(AdobeError adobeError) {
+                Assert.fail();
+            }
+
+            @Override
+            public void call(Event event) {
+                Assert.assertNotNull(event);
+
+                // depending on what the Adobe event's name was, test whether standard or custom Branch event was fired as well
+                try {
+                    BRANCH_STANDARD_EVENT eventType = BRANCH_STANDARD_EVENT.valueOf(event.getName());
+                    PrefHelper.Debug("eventType: " + eventType);
+                    try {
+                        branchSentStandardEvent(branchIsExpectedToRegisterEvent);
+                    } catch (NoSuchFieldException | IllegalAccessException | InstantiationException e) {
                         Assert.fail();
                     }
-                }));
+                } catch (IllegalArgumentException e) {
+                    try {
+                        branchSentCustomEvent(branchIsExpectedToRegisterEvent);
+                    } catch (NoSuchFieldException | IllegalAccessException | InstantiationException ee) {
+                        Assert.fail();
+                    }
+                }
 
-        // Adobe is asynchronous...  give it a chance to show something in the logs.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Assert.fail();
-        }
-
-        // depending on what the Adobe event's name was, test whether standard or custom Branch event was fired as well
-        try {
-            BRANCH_STANDARD_EVENT eventType = BRANCH_STANDARD_EVENT.valueOf(event.getName());
-            PrefHelper.Debug("eventType: " + eventType);
-            try {
-                branchSentStandardEvent(branchIsExpectedToRegisterEvent);
-            } catch (NoSuchFieldException | IllegalAccessException | InstantiationException e) {
-                Assert.fail();
+                PrefHelper.Debug("sendEvent (END)  -- " + event.getName());
             }
-        } catch (IllegalArgumentException e) {
-            try {
-                branchSentCustomEvent(branchIsExpectedToRegisterEvent);
-            } catch (NoSuchFieldException | IllegalAccessException | InstantiationException ee) {
-                Assert.fail();
-            }
-        }
-
-        PrefHelper.Debug("sendEvent (END)  -- " + event.getName());
+        });
     }
 
     protected void branchSentStandardEvent(final boolean branchIsExpectedToRegisterEvent) throws NoSuchFieldException, IllegalAccessException, InstantiationException {

@@ -1,24 +1,24 @@
 package io.branch.adobe.extension.test;
 
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
 import android.app.Application;
 import android.content.Context;
 
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.rule.ActivityTestRule;
 
-import com.adobe.marketing.mobile.AdobeCallback;
 import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.Identity;
-import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
 import com.adobe.marketing.mobile.LoggingMode;
 import com.adobe.marketing.mobile.MobileCore;
 import com.adobe.marketing.mobile.Signal;
 import com.adobe.marketing.mobile.UserProfile;
 
-import org.junit.Assert;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,11 +28,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.branch.adobe.extension.AdobeBranch;
 import io.branch.adobe.extension.AdobeBranchExtension;
 import io.branch.referral.Branch;
 import io.branch.referral.PrefHelper;
-
-import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 /**
  * Base Instrumented test, which will execute on an Android device.
@@ -45,20 +44,22 @@ public class AdobeBranchTest {
     private Context mContext;
 
     @Rule
-    public ActivityTestRule<MockActivity> mActivityRule = new ActivityTestRule<>(MockActivity.class);
+    public ActivityScenarioRule<MockActivity> mActivityRule = new ActivityScenarioRule<>(MockActivity.class);
+
 
     @Before
     public void setUp() {
-        app = mActivityRule.getActivity().getApplication();
-        mContext = getInstrumentation().getContext();
+        mActivityRule.getScenario().onActivity(activity -> {
+            app = activity.getApplication();
+            mContext = getInstrumentation().getContext();
 
-        initAdobeBranch();
+            AdobeBranch.getAutoInstance(mContext);
+            initAdobeBranch();
+        });
     }
 
     private void initAdobeBranch() {
         PrefHelper.Debug("AdobeBranchTest.initAdobeBranch()");
-
-        AdobeBranch.getAutoInstance(this);
 
         MobileCore.setApplication(app);
         MobileCore.configureWithAppID(ADOBE_APP_ID);
@@ -72,7 +73,7 @@ public class AdobeBranchTest {
         extensions.add(Signal.EXTENSION);
         extensions.add(AdobeBranchExtension.EXTENSION);
         MobileCore.registerExtensions(extensions, o -> {
-            //Log.d(LOG_TAG, "AEP Mobile SDK is initialized");
+            PrefHelper.Debug("AEP Mobile SDK is initialized");
         });
     }
 

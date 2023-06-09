@@ -3,7 +3,6 @@ package io.branch.adobe.extension;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
@@ -40,6 +39,8 @@ public class AdobeBranchExtension extends Extension {
     static final String BRANCH_CONFIGURATION_EVENT = "io.branch.eventType.configuration";
     static final String BRANCH_EVENT_SOURCE = "io.branch.eventsource.configureContent";
 
+    static final String CONFIGURATION_SHARED_STATE = "com.adobe.module.configuration";
+
     static final String IDENTITY_ID = "mid";
     static final String ANALYTICS_VISITOR_ID = "vid";
     static final String ANALYTICS_TRACKING_ID = "aid";
@@ -66,17 +67,10 @@ public class AdobeBranchExtension extends Extension {
         return "AdobeBranchExtension";
     }
 
-    @Override
-    protected @Nullable
-    Map<String, String> getMetadata() {
-        return null;
-    }
-
     protected void onRegistered() {
         super.onRegistered();
 
         AdobeBranch.getAutoInstance( MobileCore.getApplication().getApplicationContext());
-        Branch.enableLogging();
         registerListeners();
 
         PrefHelper.Debug("AdobeBranchExtension was successfully registered.");
@@ -100,7 +94,7 @@ public class AdobeBranchExtension extends Extension {
 
     @Override
     public boolean readyForEvent(Event event) {
-        SharedStateResult res = getApi().getSharedState("com.adobe.module.configuration", event, true, SharedStateResolution.ANY);
+        SharedStateResult res = getApi().getSharedState(CONFIGURATION_SHARED_STATE, event, true, SharedStateResolution.ANY);
         return res != null && res.getStatus() == SharedStateStatus.SET;
     }
 
@@ -110,6 +104,7 @@ public class AdobeBranchExtension extends Extension {
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
+            PrefHelper.Debug("Branch is not initialized yet. Can not handle Adobe event.");
             return;
         }
 

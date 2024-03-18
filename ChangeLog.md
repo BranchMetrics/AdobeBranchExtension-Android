@@ -4,12 +4,11 @@
   * March 18, 2023
   * Update Branch Android SDK to 5.10.1
   * Updated AEP SDKs
-  * 
+  
 - v2.0.0
   * June 20, 2023
   * Update Branch Android SDK to 5.4.2
   * Updated from ACPCore to AEPCore
-
 
 - v1.4.0
   * January 12, 2023

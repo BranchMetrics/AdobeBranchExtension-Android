@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.branch.referral.Branch;
+import io.branch.referral.BranchLogger;
 import io.branch.referral.BranchPluginSupport;
-import io.branch.referral.PrefHelper;
 import io.branch.referral.util.BRANCH_STANDARD_EVENT;
 import io.branch.referral.util.BranchEvent;
 import io.branch.referral.util.CurrencyType;
@@ -73,7 +73,7 @@ public class AdobeBranchExtension extends Extension {
         AdobeBranch.getAutoInstance( MobileCore.getApplication().getApplicationContext());
         registerListeners();
 
-        PrefHelper.Debug("AdobeBranchExtension was successfully registered.");
+        BranchLogger.d(TAG + "AdobeBranchExtension was successfully registered.");
     }
 
     private void registerListeners() {
@@ -99,12 +99,12 @@ public class AdobeBranchExtension extends Extension {
     }
 
     void handleAdobeEvent(final Event event) {
-        PrefHelper.Debug(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]",
+        BranchLogger.d(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]",
                 branchEventNameFromAdobeEvent(event), event.getType(), event.getSource()));
 
         if (Branch.getInstance() == null) {
             // Branch is not initialized.
-            PrefHelper.Debug("Branch is not initialized yet. Can not handle Adobe event.");
+            BranchLogger.d(TAG + "Branch is not initialized yet. Can not handle Adobe event.");
             return;
         }
 
@@ -115,7 +115,7 @@ public class AdobeBranchExtension extends Extension {
         } else if (isTrackedEvent(event)) {
             handleEvent(event);
         } else {
-            PrefHelper.Debug(TAG + "Event Dropped: " + branchEventNameFromAdobeEvent(event));
+            BranchLogger.d(TAG + "Event Dropped: " + branchEventNameFromAdobeEvent(event));
         }
     }
 
@@ -151,7 +151,7 @@ public class AdobeBranchExtension extends Extension {
     private void handleBranchConfigurationEvent(final Event event) {
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
-            PrefHelper.Debug("Configuring AdobeBranch");
+            BranchLogger.d(TAG + "Configuring AdobeBranch");
 
             Object object = eventData.get(AdobeBranch.KEY_APICONFIGURATION);
 
@@ -167,7 +167,7 @@ public class AdobeBranchExtension extends Extension {
 
                 } catch (Exception e) {
                     // Internal Error.
-                    PrefHelper.LogAlways(TAG + "handleBranchConfigurationEvent Exception" + e.getMessage());
+                    BranchLogger.w(TAG + "Error while configuring AdobeBranch" + e.getMessage());
                 }
             } else if (object == null) {
                 apiWhitelist = null;
@@ -198,7 +198,7 @@ public class AdobeBranchExtension extends Extension {
 
             if (extensionSharedState != null) {
                 for (Map.Entry<String, Object> entry : extensionSharedState.getValue().entrySet()) {
-                    PrefHelper.Debug(String.format("identity extension shared state = %s", extensionSharedState.toString()));
+                    BranchLogger.d(String.format("identity extension shared state = %s", extensionSharedState));
 
                     Object value = entry.getValue();
                     if (value == null) continue;
@@ -244,13 +244,13 @@ public class AdobeBranchExtension extends Extension {
         BranchEvent branchEvent = branchEventFromAdobeEvent(event);
         if (branchEvent != null) {
             try {
-                PrefHelper.Debug(TAG + "Track BranchEvent: " + branchEvent.getEventName());
+                BranchLogger.d(TAG + "Track BranchEvent: " + branchEvent.getEventName());
 
                 branchEvent.logEvent(MobileCore.getApplication().getApplicationContext());
 
                 deviceDataSharedState(event);
             } catch (Exception e) {
-                PrefHelper.LogAlways(TAG + "handleTrackEvent Exception" + e.getMessage());
+                BranchLogger.w(TAG + "handleTrackEvent Exception" + e.getMessage());
             }
         }
     }

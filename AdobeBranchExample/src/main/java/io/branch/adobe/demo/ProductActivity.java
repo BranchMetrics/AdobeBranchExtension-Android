@@ -3,6 +3,7 @@ package io.branch.adobe.demo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -30,6 +31,7 @@ import io.branch.referral.util.ShareSheetStyle;
 
 public class ProductActivity extends AppCompatActivity {
     private List<SwagModel> swagModelList;
+    private static final String TAG = "AdobeBranchExample::";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,14 +82,14 @@ public class ProductActivity extends AppCompatActivity {
             ListAdapter customAdapter = new SwagAdapter(this, R.layout.swag_item, swagModelList);
             listView.setAdapter(customAdapter);
         } catch (JSONException e) {
-            PrefHelper.Debug("Error initializing List: " + e.getLocalizedMessage());
+            Log.d(TAG, "Error initializing List: " + e.getLocalizedMessage());
         }
     }
 
     private Branch.BranchReferralInitListener branchInitSessionCallback = new Branch.BranchReferralInitListener() {
             @Override
             public void onInitFinished(JSONObject referringParams, BranchError error) {
-                PrefHelper.Debug("initBranchSession, referringParams = " + referringParams + ", error = " + error);
+                Log.d(TAG, "initBranchSession, referringParams = " + referringParams + ", error = " + error);
                 if (referringParams == null) return;
                 try {
                     // You would think that there was an easier way to figure this out than looking at LinkProperties code

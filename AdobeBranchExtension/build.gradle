@@ -36,18 +36,18 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     // Branch
-    api 'io.branch.sdk.android:library:5.4.0'
+    api 'io.branch.sdk.android:library:5.11.0'
     implementation ('com.google.android.gms:play-services-ads-identifier:17.0.0')
     // for Huawei devices without GMS, adding it requires bumping up min api level to 19 though, so we
     // leave it up to the client to add it following Branch documentation here: https://help.branch.io/developers-hub/docs/android-basic-integration
     //implementation 'com.huawei.hms:ads-identifier:3.4.28.305'
 
     // Adobe
-    androidTestImplementation 'com.adobe.marketing.mobile:analytics:2.0.2'
-    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:2.0.0'
-    implementation 'com.adobe.marketing.mobile:core:2.2.0'
-    implementation 'com.adobe.marketing.mobile:lifecycle:2.0.2'
-    implementation 'com.adobe.marketing.mobile:identity:2.0.2'
+    androidTestImplementation 'com.adobe.marketing.mobile:analytics:2.0.3'
+    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:2.0.1'
+    implementation 'com.adobe.marketing.mobile:core:2.6.2'
+    implementation 'com.adobe.marketing.mobile:lifecycle:2.0.4'
+    implementation 'com.adobe.marketing.mobile:identity:2.0.3'
     implementation 'com.adobe.marketing.mobile:signal:2.0.1'
 
     androidTestImplementation project(path: ':AdobeBranchExtension')

@@ -17,6 +17,7 @@ import java.util.List;
 
 import io.branch.adobe.extension.AdobeBranchExtension;
 import io.branch.referral.Branch;
+import io.branch.referral.BranchLogger;
 import io.branch.referral.PrefHelper;
 
 public class DemoApplication extends Application {
@@ -27,7 +28,7 @@ public class DemoApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        Branch.enableLogging();
+        Branch.enableLogging(BranchLogger.BranchLogLevel.VERBOSE);
 
         Analytics.setVisitorIdentifier("custom_identifier_1234"); // to test custom visitor ID (key: "vid")
 

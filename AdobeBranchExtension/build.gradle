@@ -1,6 +1,16 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+    id 'signing'
+}
 
 android {
+    namespace 'io.branch.adobe.extension'
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
 
     defaultConfig {
@@ -14,11 +24,21 @@ android {
     }
 
     buildTypes {
+        debug {
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
+            buildConfigField "long", "VERSION_CODE", project.VERSION_CODE
+            buildConfigField "String", "VERSION_NAME", "\"${project.VERSION_NAME}\""
+        }
+
         release {
             minifyEnabled false
             consumerProguardFile('proguard-rules.pro')
+            buildConfigField "long", "VERSION_CODE", project.VERSION_CODE
+            buildConfigField "String", "VERSION_NAME", "\"${project.VERSION_NAME}\""
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -53,4 +73,110 @@ dependencies {
     androidTestImplementation project(path: ':AdobeBranchExtension')
 }
 
-apply from: 'https://raw.githubusercontent.com/BranchMetrics/GradleToMavenOptionalDependencies/master/gradle-maven-push.gradle'
+def isReleaseBuild() {
+    return !VERSION_NAME.contains("SNAPSHOT")
+}
+
+def getReleaseRepositoryUrl() {
+    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+            : "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+def getRepositoryUsername() {
+    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+}
+
+def getRepositoryPassword() {
+    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.findByName('release')
+            groupId = GROUP
+            artifactId = POM_ARTIFACT_ID
+            version = VERSION_NAME
+
+//            // Attach sources and Javadocs
+//            artifact androidSourcesJar
+//            artifact androidJavadocsJar
+
+            // Configure POM
+            pom {
+                name.set(POM_NAME)
+                description.set(POM_DESCRIPTION)
+                url.set(POM_URL)
+                packaging = POM_PACKAGING
+
+                scm {
+                    url.set(POM_SCM_URL)
+                    connection.set(POM_SCM_CONNECTION)
+                    developerConnection.set(POM_SCM_DEV_CONNECTION)
+                }
+
+                licenses {
+                    license {
+                        name.set(POM_LICENCE_NAME)
+                        url.set(POM_LICENCE_URL)
+                        distribution.set(POM_LICENCE_DIST)
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set(POM_DEVELOPER_ID)
+                        name.set(POM_DEVELOPER_NAME)
+                    }
+                }
+
+                // Optional dependencies
+                withXml {
+                    asNode().dependencies.dependency.findAll {
+                        it.artifactId.text() == 'okhttp' || it.artifactId.text() == 'firebase-appindexing'
+                    }.each {
+                        if (it.optional)
+                            it.optional.value = 'true'
+                        else
+                            it.appendNode('optional', 'true')
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
+            credentials {
+                username = getRepositoryUsername()
+                password = getRepositoryPassword()
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign publishing.publications.mavenJava
+}
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set("sources")
+    from android.sourceSets.main.java.srcDirs
+}
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    archiveClassifier.set("javadoc")
+    from androidJavadocs.destinationDir
+}

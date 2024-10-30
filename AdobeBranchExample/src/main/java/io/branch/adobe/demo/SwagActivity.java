@@ -9,8 +9,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.adobe.marketing.mobile.ExtensionError;
-import com.adobe.marketing.mobile.ExtensionErrorCallback;
+import com.adobe.marketing.mobile.Extension;
+import com.adobe.marketing.mobile.ExtensionHelper;
 import com.adobe.marketing.mobile.MobileCore;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -28,7 +28,7 @@ import io.branch.indexing.BranchUniversalObject;
 import io.branch.referral.util.LinkProperties;
 import io.branch.referral.util.ShareSheetStyle;
 
-public class SwagActivity extends AppCompatActivity implements View.OnClickListener, ExtensionErrorCallback<ExtensionError> {
+public class SwagActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "Branch::SwagActivity";
 
     public static final String SWAG_DATA = "swag";
@@ -75,21 +75,18 @@ public class SwagActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.add_to_cart:
-                doAddToCart(view);
-                break;
-
-            case R.id.purchase:
-                doPurchase(view);
-                break;
+        int id = view.getId();
+        if (id == R.id.add_to_cart) {
+            doAddToCart(view);
+        } else if (id == R.id.purchase) {
+            doPurchase(view);
         }
     }
-
-    @Override
-    public void error(final ExtensionError extensionError) {
-        Log.e(TAG, String.format("An error occurred while dispatching event %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
-    }
+    
+//
+//    public void error(final ExtensionError extensionError) {
+//        Log.e(TAG, String.format("An error occurred while dispatching event %d %s", extensionError.getErrorCode(), extensionError.getErrorName()));
+//    }
 
 
     private void init(String swagData) {

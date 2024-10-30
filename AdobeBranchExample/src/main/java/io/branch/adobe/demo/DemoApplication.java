@@ -29,10 +29,10 @@ public class DemoApplication extends Application {
 
         Branch.enableLogging();
 
+        Analytics.setVisitorIdentifier("custom_identifier_1234"); // to test custom visitor ID (key: "vid")
 
         // Initialize
         initAdobeBranch();
-        Analytics.setVisitorIdentifier("custom_identifier_1234"); // to test custom visitor ID (key: "vid")
     }
 
     private void initAdobeBranch() {

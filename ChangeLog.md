@@ -1,5 +1,10 @@
 # Adobe Branch SDK Extension change log
 
+- 3.0.0
+  * Nov 18, 2024
+  * Update Branch Android SDK to 5.14.0
+  * Updated AEP SDKs to v3
+
 - v2.1.0
   * April 1, 2024
   * Update Branch Android SDK to 5.11.0

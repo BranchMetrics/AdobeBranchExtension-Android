@@ -193,12 +193,12 @@ public class AdobeBranchExtension extends Extension {
             if (ADOBE_ANALYTICS_EXTENSION.equals(stateowner)) {
                 extensionSharedState = getApi().getSharedState(ADOBE_ANALYTICS_EXTENSION, event, true, resolution);
             } else if (ADOBE_IDENTITY_EXTENSION.equals(stateowner)) {
-                extensionSharedState = getApi().getSharedState(ADOBE_ANALYTICS_EXTENSION, event, true, resolution);
+                extensionSharedState = getApi().getSharedState(ADOBE_IDENTITY_EXTENSION, event, true, resolution);
             }
 
             if (extensionSharedState != null) {
                 for (Map.Entry<String, Object> entry : extensionSharedState.getValue().entrySet()) {
-                    BranchLogger.d(String.format("identity extension shared state = %s", extensionSharedState));
+                    BranchLogger.d(String.format("identity extension shared state = %s", entry.toString()));
 
                     Object value = entry.getValue();
                     if (value == null) continue;
@@ -209,15 +209,18 @@ public class AdobeBranchExtension extends Extension {
                     switch (key) {
                         case IDENTITY_ID:
                             // pass Adobe Experience Cloud ID (https://app.gitbook.com/@aep-sdks/s/docs/using-mobile-extensions/mobile-core/identity/identity-api-reference#getExperienceCloudIdTitle)
+                            BranchLogger.d(TAG + "Setting Branch Request Metadata's $marketing_cloud_visitor_id to Adobe Experience Cloud ID: " + valueAsString);
                             branch.setRequestMetadata("$marketing_cloud_visitor_id", valueAsString);
                             break;
                         case ANALYTICS_VISITOR_ID:
                             // pass Adobe Custom Visitor ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#getvisitoridentifier)
+                            BranchLogger.d(TAG + "Setting Branch Request Metadata's $analytics_visitor_id to Adobe Custom Visitor ID: " + valueAsString);
                             branch.setRequestMetadata("$analytics_visitor_id", valueAsString);
                             break;
                         case ANALYTICS_TRACKING_ID:
                             // pass Adobe Tracking ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#gettrackingidentifier)
                             // if MARKETING_CLOUD_VISITOR_ID is set this will always be null unless the Adobe Launch client set a grace period to support both IDs (https://docs.adobe.com/content/help/en/id-service/using/implementation/setup-analytics.html#:~:text=Grace%20periods%20can%20run%20for,a%20grace%20period%20if%20required.&text=You%20need%20a%20grace%20period,the%20same%20Analytics%20report%20suite.)
+                            BranchLogger.d(TAG + "Setting Branch Request Metadata's $adobe_visitor_id to Adobe Tracking ID: " + valueAsString);
                             branch.setRequestMetadata("$adobe_visitor_id", valueAsString);
                             break;
                     }

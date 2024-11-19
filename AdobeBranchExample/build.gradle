@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace 'io.branch.adobe.demo'
     compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
     defaultConfig {
         applicationId "io.branch.adobe.demo"
@@ -38,10 +39,10 @@ dependencies {
     api project(path: ':AdobeBranchExtension')
 
     // Adobe
-    implementation 'com.adobe.marketing.mobile:analytics:2.0.3'
-    implementation 'com.adobe.marketing.mobile:userprofile:2.0.1'
-    implementation 'com.adobe.marketing.mobile:core:2.6.2'
-    implementation 'com.adobe.marketing.mobile:lifecycle:2.0.4'
-    implementation 'com.adobe.marketing.mobile:identity:2.0.3'
-    implementation 'com.adobe.marketing.mobile:signal:2.0.1'
+    implementation 'com.adobe.marketing.mobile:analytics:3.0.1'
+    implementation 'com.adobe.marketing.mobile:userprofile:3.0.0'
+    implementation 'com.adobe.marketing.mobile:core:3.2.0'
+    implementation 'com.adobe.marketing.mobile:lifecycle:3.0.1'
+    implementation 'com.adobe.marketing.mobile:identity:3.0.1'
+    implementation 'com.adobe.marketing.mobile:signal:3.0.0'
 }

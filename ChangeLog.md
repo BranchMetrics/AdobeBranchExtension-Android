@@ -1,5 +1,9 @@
 # Adobe Branch SDK Extension change log
 
+- 3.0.1
+  * Nov 19, 2024
+  * Fix for missing .aar in 3.0.0
+
 - 3.0.0
   * Nov 18, 2024
   * Update Branch Android SDK to 5.14.0

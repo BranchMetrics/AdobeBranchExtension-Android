@@ -71,7 +71,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     // Branch
-    api 'io.branch.sdk.android:library:5.14.0'
+    api 'io.branch.sdk.android:library:5.15.0'
     implementation ('com.google.android.gms:play-services-ads-identifier:17.0.0')
     // for Huawei devices without GMS, adding it requires bumping up min api level to 19 though, so we
     // leave it up to the client to add it following Branch documentation here: https://help.branch.io/developers-hub/docs/android-basic-integration
@@ -124,14 +124,23 @@ def applyCommonConfig = { MavenPublication publication ->
         }
 
         withXml {
-            asNode().dependencies.dependency.findAll {
-                it.artifactId.text() == 'okhttp' || it.artifactId.text() == 'firebase-appindexing'
-            }.each { dependency ->
-                def optionalNode = dependency.optional
-                if (optionalNode) {
-                    optionalNode[0].value = 'true'
-                } else {
-                    dependency.appendNode('optional', 'true')
+            def node = asNode()
+            def dependenciesNode = node.appendNode('dependencies')
+
+            configurations.implementation.allDependencies.each { dependency ->
+                if (dependency.group != null && dependency.name != null && dependency.version != null) {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dependency.group)
+                    dependencyNode.appendNode('artifactId', dependency.name)
+                    dependencyNode.appendNode('version', dependency.version)
+
+                    // Default scope to compile
+                    dependencyNode.appendNode('scope', 'compile')
+
+                    // Check for specific artifact IDs and add 'optional' flag
+                    if (dependency.name in ['okhttp', 'firebase-appindexing']) {
+                        dependencyNode.appendNode('optional', 'true')
+                    }
                 }
             }
         }
@@ -154,14 +163,14 @@ project.afterEvaluate {
         }
 
         repositories {
-        maven {
-            url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
-            credentials {
-                username = getRepositoryUsername()
-                password = getRepositoryPassword()
+            maven {
+                url = isReleaseBuild() ? getReleaseRepositoryUrl() : getSnapshotRepositoryUrl()
+                credentials {
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
+                }
             }
         }
-    }
     }
 
     signing {

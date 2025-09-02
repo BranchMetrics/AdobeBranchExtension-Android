@@ -62,28 +62,28 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'com.android.installreferrer:installreferrer:2.1'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test:runner:1.3.0'
-    androidTestImplementation 'androidx.test:rules:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    androidTestImplementation 'androidx.test:rules:1.7.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 
     // Branch
-    api 'io.branch.sdk.android:library:5.15.0'
+    api 'io.branch.sdk.android:library:5.20.0'
     implementation ('com.google.android.gms:play-services-ads-identifier:17.0.0')
     // for Huawei devices without GMS, adding it requires bumping up min api level to 19 though, so we
     // leave it up to the client to add it following Branch documentation here: https://help.branch.io/developers-hub/docs/android-basic-integration
     //implementation 'com.huawei.hms:ads-identifier:3.4.28.305'
 
     // Adobe
-    androidTestImplementation 'com.adobe.marketing.mobile:analytics:3.0.1'
-    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:3.0.0'
-    implementation 'com.adobe.marketing.mobile:core:3.2.0'
-    implementation 'com.adobe.marketing.mobile:lifecycle:3.0.1'
-    implementation 'com.adobe.marketing.mobile:identity:3.0.1'
-    implementation 'com.adobe.marketing.mobile:signal:3.0.0'
+    androidTestImplementation 'com.adobe.marketing.mobile:analytics:3.0.2'
+    androidTestImplementation 'com.adobe.marketing.mobile:userprofile:3.0.1'
+    implementation 'com.adobe.marketing.mobile:core:3.5.0'
+    implementation 'com.adobe.marketing.mobile:lifecycle:3.0.2'
+    implementation 'com.adobe.marketing.mobile:identity:3.0.2'
+    implementation 'com.adobe.marketing.mobile:signal:3.0.1'
 
     androidTestImplementation project(path: ':AdobeBranchExtension')
 }

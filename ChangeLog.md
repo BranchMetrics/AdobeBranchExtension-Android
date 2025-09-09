@@ -2,7 +2,7 @@
 
 - 3.1.0
   * Sept 2, 2025
-  * Update Branch Android SDK to 5.20.0
+  * Update Branch Android SDK to 5.20.1
   * Updated compile dependency versions
   
 - 3.0.2

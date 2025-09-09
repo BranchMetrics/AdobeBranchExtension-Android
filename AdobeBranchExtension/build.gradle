@@ -71,7 +71,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 
     // Branch
-    api 'io.branch.sdk.android:library:5.20.0'
+    api 'io.branch.sdk.android:library:5.20.1'
     implementation ('com.google.android.gms:play-services-ads-identifier:18.0.1')
     // for Huawei devices without GMS, adding it requires bumping up min api level to 19 though, so we
     // leave it up to the client to add it following Branch documentation here: https://help.branch.io/developers-hub/docs/android-basic-integration

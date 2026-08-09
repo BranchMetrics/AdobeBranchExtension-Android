@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.adobe.marketing.mobile.AdobeCallback;
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.Extension;
 import com.adobe.marketing.mobile.ExtensionApi;
@@ -11,6 +12,9 @@ import com.adobe.marketing.mobile.MobileCore;
 import com.adobe.marketing.mobile.SharedStateResolution;
 import com.adobe.marketing.mobile.SharedStateResult;
 import com.adobe.marketing.mobile.SharedStateStatus;
+import com.adobe.marketing.mobile.edge.identity.Identity;
+import com.adobe.marketing.mobile.edge.identity.IdentityItem;
+import com.adobe.marketing.mobile.edge.identity.IdentityMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +33,7 @@ public class AdobeBranchExtension extends Extension {
     private static final String ADOBE_TRACK_EVENT = "com.adobe.eventType.generic.track";
     private static final String ADOBE_EVENT_SOURCE = "com.adobe.eventSource.requestContent";
 
-    private static final String ADOBE_IDENTITY_EXTENSION = "com.adobe.module.identity";
+    private static final String ADOBE_IDENTITY_EXTENSION = "com.adobe.edge.identity";
     private static final String ADOBE_ANALYTICS_EXTENSION = "com.adobe.module.analytics";
 
     private static final String ADOBE_HUB_EVENT_TYPE = "com.adobe.eventType.hub";
@@ -41,9 +45,8 @@ public class AdobeBranchExtension extends Extension {
 
     static final String CONFIGURATION_SHARED_STATE = "com.adobe.module.configuration";
 
-    static final String IDENTITY_ID = "mid";
-    static final String ANALYTICS_VISITOR_ID = "vid";
-    static final String ANALYTICS_TRACKING_ID = "aid";
+    String EXPERIENCE_CLOUD_ID_KEY = "ECID";
+
     static AtomicBoolean PASSED_ADOBE_IDS_TO_BRANCH = new AtomicBoolean(false);
 
     static List<String> allowList = new ArrayList<>();
@@ -99,6 +102,7 @@ public class AdobeBranchExtension extends Extension {
     }
 
     void handleAdobeEvent(final Event event) {
+        BranchLogger.v("handleAdobeEvent " + event);
         BranchLogger.d(TAG + String.format("Started processing new event [%s] of type [%s] and source [%s]",
                 branchEventNameFromAdobeEvent(event), event.getType(), event.getSource()));
 
@@ -120,6 +124,7 @@ public class AdobeBranchExtension extends Extension {
     }
 
     private boolean isTrackedEvent(final Event event) {
+        BranchLogger.v("isTrackedEvent apiWhitelist=" + apiWhitelist + " event.getType()=" + event.getSource());
         if (apiWhitelist == null) {
             return (event.getType().equals(ADOBE_TRACK_EVENT) && event.getSource().equals(ADOBE_EVENT_SOURCE));
         }
@@ -134,10 +139,12 @@ public class AdobeBranchExtension extends Extension {
     }
 
     private boolean isBranchConfigurationEvent(final Event event) {
+        BranchLogger.v("isBranchConfigurationEvent event.getType()=" + event.getType() + " event.getSource()=" + event.getSource());
         return (event.getType().equals(BRANCH_CONFIGURATION_EVENT) && event.getSource().equals(BRANCH_EVENT_SOURCE));
     }
 
     private boolean isSharedStateEvent(final Event event) {
+        BranchLogger.v("isSharedStateEvent event.getType()=" + event.getType() + " event.getSource()=" + event.getSource());
         return (event.getType().equals(ADOBE_HUB_EVENT_TYPE) && event.getSource().equals(ADOBE_SHARED_STATE_EVENT_SOURCE));
     }
 
@@ -149,6 +156,7 @@ public class AdobeBranchExtension extends Extension {
      */
     @SuppressWarnings("unchecked")  // Cast Conversion to List<EventTypeSource>
     private void handleBranchConfigurationEvent(final Event event) {
+        BranchLogger.v("handleBranchConfigurationEvent " + event);
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
             BranchLogger.d(TAG + "Configuring AdobeBranch");
@@ -184,6 +192,7 @@ public class AdobeBranchExtension extends Extension {
      * @param event Adobe Event
      */
     private void handleSharedStateEvent(final Event event) {
+        BranchLogger.v("handleSharedStateEvent " + event);
         Branch branch = Branch.getInstance();
         if (branch != null && event != null && event.getEventData() != null) {
             SharedStateResult extensionSharedState = null;
@@ -196,41 +205,43 @@ public class AdobeBranchExtension extends Extension {
                 extensionSharedState = getApi().getSharedState(ADOBE_IDENTITY_EXTENSION, event, true, resolution);
             }
 
-            if (extensionSharedState != null) {
-                for (Map.Entry<String, Object> entry : extensionSharedState.getValue().entrySet()) {
-                    BranchLogger.d(String.format("identity extension shared state = %s", entry.toString()));
+            BranchLogger.v("extensionSharedState " + extensionSharedState + " extensionSharedState.getStatus()=" + extensionSharedState.getStatus() + " extensionSharedState.getValue()=" + extensionSharedState.getValue());
 
-                    Object value = entry.getValue();
-                    if (value == null) continue;
-                    String valueAsString = value.toString();
-                    if (TextUtils.isEmpty(valueAsString)) continue;
-
-                    final String key = entry.getKey();
-                    switch (key) {
-                        case IDENTITY_ID:
-                            // pass Adobe Experience Cloud ID (https://app.gitbook.com/@aep-sdks/s/docs/using-mobile-extensions/mobile-core/identity/identity-api-reference#getExperienceCloudIdTitle)
-                            BranchLogger.d(TAG + "Setting Branch Request Metadata's $marketing_cloud_visitor_id to Adobe Experience Cloud ID: " + valueAsString);
-                            branch.setRequestMetadata("$marketing_cloud_visitor_id", valueAsString);
-                            break;
-                        case ANALYTICS_VISITOR_ID:
-                            // pass Adobe Custom Visitor ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#getvisitoridentifier)
-                            BranchLogger.d(TAG + "Setting Branch Request Metadata's $analytics_visitor_id to Adobe Custom Visitor ID: " + valueAsString);
-                            branch.setRequestMetadata("$analytics_visitor_id", valueAsString);
-                            break;
-                        case ANALYTICS_TRACKING_ID:
-                            // pass Adobe Tracking ID (https://aep-sdks.gitbook.io/docs/using-mobile-extensions/adobe-analytics/analytics-api-reference#gettrackingidentifier)
-                            // if MARKETING_CLOUD_VISITOR_ID is set this will always be null unless the Adobe Launch client set a grace period to support both IDs (https://docs.adobe.com/content/help/en/id-service/using/implementation/setup-analytics.html#:~:text=Grace%20periods%20can%20run%20for,a%20grace%20period%20if%20required.&text=You%20need%20a%20grace%20period,the%20same%20Analytics%20report%20suite.)
-                            BranchLogger.d(TAG + "Setting Branch Request Metadata's $adobe_visitor_id to Adobe Tracking ID: " + valueAsString);
-                            branch.setRequestMetadata("$adobe_visitor_id", valueAsString);
-                            break;
+            Identity.getIdentities(new AdobeCallback<IdentityMap>() {
+                @Override
+                public void call(IdentityMap identityMap) {
+                    if (identityMap == null) {
+                        return;
                     }
-                    if (IDENTITY_ID.equals(key) || ANALYTICS_VISITOR_ID.equals(key) || ANALYTICS_TRACKING_ID.equals(key)) {
-                        // we received at least one, non-empty adobe id
-                        PASSED_ADOBE_IDS_TO_BRANCH.set(true);
+
+                    List<String> namespaces = identityMap.getNamespaces();
+
+                    for(int i = 0; i < namespaces.size(); i++){
+                        List<IdentityItem> identities = identityMap.getIdentityItemsForNamespace(namespaces.get(i));
+                        BranchLogger.v("Found namespace: " + namespaces.get(i));
+                        for(int j = 0; j < identities.size(); j++){
+                            BranchLogger.v("Found identity: " + identities.get(j).toString());
+
+                            if(EXPERIENCE_CLOUD_ID_KEY.equals(namespaces.get(i))){
+                                branch.setRequestMetadata("$marketing_cloud_visitor_id", identities.get(j).getId());
+                            }
+                            // Previously this id would be found with key "vid" but this has been removed.
+                            // Now just iterate through map assuming 1 custom entry.
+                            // TODO: Support the whole map?
+                            else {
+                                branch.setRequestMetadata("$analytics_visitor_id", identities.get(j).getId());
+                            }
+
+                            PASSED_ADOBE_IDS_TO_BRANCH.set(true);
+                        }
+                    }
+
+                    // By design this SDK stays locked until this is true
+                    if(PASSED_ADOBE_IDS_TO_BRANCH.get()) {
                         Branch.getInstance().removeSessionInitializationDelay();
                     }
                 }
-            }
+            });
         }
     }
 
@@ -241,6 +252,7 @@ public class AdobeBranchExtension extends Extension {
      * @param event Adobe Event
      */
     private void handleEvent(final Event event) {
+        BranchLogger.v("handleEvent" + event);
         String name = branchEventNameFromAdobeEvent(event);
         if (!isValidEventForBranch(name)) return;
 
@@ -259,6 +271,7 @@ public class AdobeBranchExtension extends Extension {
     }
 
     private BranchEvent branchEventFromAdobeEvent(final Event event) {
+        BranchLogger.v("branchEventFromAdobeEvent " + event);
         BranchEvent branchEvent = null;
         Map<String, Object> eventData = event.getEventData();
         if (eventData != null) {
